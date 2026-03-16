@@ -64,12 +64,11 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
         // w는 로컬 변수로 이 메서드 끝까지 유지됨
     }
 
-    func windowWillClose(_ notification: Notification) {
-        // X 버튼으로 직접 닫은 경우
-        guard window != nil else { return }
-        window = nil
-        let dismiss = onDismiss
-        onDismiss = nil
-        dismiss?()
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // X 버튼을 Cancel과 동일한 코드 경로로 처리
+        // windowWillClose에서 처리하면 NSHostingView 해제 시점과 충돌해 크래시 발생
+        // false를 반환해 시스템이 직접 닫지 않도록 하고, close()가 orderOut으로 처리
+        DispatchQueue.main.async { [weak self] in self?.close() }
+        return false
     }
 }
