@@ -11,10 +11,10 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
         let screen = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let chrome: CGFloat = 56 + 52  // toolbar + action bar
 
-        // 이미지 원본 크기로 창을 열되, 화면의 90%를 초과하면 그 크기로 제한
+        // 이미지 원본 크기에 맞추되, 화면의 90%를 초과하면 제한
         let maxW = screen.width * 0.9
         let maxH = screen.height * 0.9 - chrome
-        let contentW = max(min(image.size.width, maxW), 520)
+        let contentW = min(image.size.width, maxW)
         let contentH = min(image.size.height, maxH) + chrome
 
         let rect = NSRect(
@@ -31,7 +31,7 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
             defer: false
         )
         w.title = "이미지 편집"
-        w.minSize = NSSize(width: 520, height: 400)
+        w.minSize = NSSize(width: 400, height: 300)
         w.delegate = self
 
         w.contentView = NSHostingView(
@@ -39,16 +39,10 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
                 baseImage: image,
                 onComplete: { [weak self] edited in
                     onComplete(edited)
-                    DispatchQueue.main.async {
-                        self?.close()
-                        self?.onDismiss?()
-                    }
+                    DispatchQueue.main.async { self?.close() }
                 },
                 onCancel: { [weak self] in
-                    DispatchQueue.main.async {
-                        self?.close()
-                        self?.onDismiss?()
-                    }
+                    DispatchQueue.main.async { self?.close() }
                 }
             )
         )
@@ -59,11 +53,22 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
     }
 
     func close() {
-        window?.close()
+        guard let w = window else { return }
         window = nil
+        let dismiss = onDismiss
+        onDismiss = nil
+        w.delegate = nil
+        w.orderOut(nil)     // 창을 숨김 (close와 달리 뷰 계층을 즉시 파괴하지 않음)
+        dismiss?()          // editorWindows에서 제거 → self 해제 가능
+        // w는 로컬 변수로 이 메서드 끝까지 유지됨
     }
 
     func windowWillClose(_ notification: Notification) {
+        // X 버튼으로 직접 닫은 경우
+        guard window != nil else { return }
         window = nil
+        let dismiss = onDismiss
+        onDismiss = nil
+        dismiss?()
     }
 }

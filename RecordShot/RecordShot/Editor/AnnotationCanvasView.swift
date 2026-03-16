@@ -4,7 +4,7 @@ import CoreImage
 // MARK: - NSView canvas (isFlipped = true → top-left origin)
 
 class AnnotationCanvasNSView: NSView {
-    var baseImage: NSImage?
+    var baseImage: NSImage? { didSet { invalidateIntrinsicContentSize() } }
     var annotations: [Annotation] = []
     var currentAnnotation: Annotation?
 
@@ -21,6 +21,7 @@ class AnnotationCanvasNSView: NSView {
 
     override var isFlipped: Bool { true }
     override var acceptsFirstResponder: Bool { true }
+    override var intrinsicContentSize: NSSize { baseImage?.size ?? super.intrinsicContentSize }
 
     // MARK: - Drawing
 
@@ -28,8 +29,15 @@ class AnnotationCanvasNSView: NSView {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
         ctx.saveGState()
 
-        // Base image
-        baseImage?.draw(in: bounds)
+        // Base image — flipped 뷰에서 올바른 방향으로 그리기
+        if let img = baseImage {
+            img.draw(in: bounds,
+                     from: NSRect(origin: .zero, size: img.size),
+                     operation: .sourceOver,
+                     fraction: 1.0,
+                     respectFlipped: true,
+                     hints: nil)
+        }
 
         // Committed annotations
         for ann in annotations {
@@ -325,28 +333,40 @@ class AnnotationCanvasNSView: NSView {
     }
 }
 
-// MARK: - SwiftUI representable
+// MARK: - SwiftUI representable (NSScrollView 기반)
 
 import SwiftUI
 
 struct AnnotationCanvasView: NSViewRepresentable {
     let baseImage: NSImage
-    let displaySize: CGSize
     let currentTool: AnnotationTool
     let currentColor: NSColor
     let lineWidth: CGFloat
     let fontSize: CGFloat
     let onReady: (AnnotationCanvasNSView) -> Void
 
-    func makeNSView(context: Context) -> AnnotationCanvasNSView {
-        let view = AnnotationCanvasNSView()
-        view.baseImage = baseImage
-        view.displayScale = displaySize.width / baseImage.size.width
-        onReady(view)
-        return view
+    func makeNSView(context: Context) -> NSScrollView {
+        let canvasView = AnnotationCanvasNSView()
+        canvasView.baseImage = baseImage
+        canvasView.displayScale = 1.0
+        canvasView.autoresizingMask = []  // 스크롤뷰에 의한 리사이즈 방지
+        canvasView.frame = NSRect(origin: .zero, size: baseImage.size)
+
+        let scrollView = NSScrollView()
+        scrollView.documentView = canvasView
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.backgroundColor = .underPageBackgroundColor
+        scrollView.drawsBackground = true
+        scrollView.allowsMagnification = false
+
+        onReady(canvasView)
+        return scrollView
     }
 
-    func updateNSView(_ v: AnnotationCanvasNSView, context: Context) {
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        guard let v = scrollView.documentView as? AnnotationCanvasNSView else { return }
         v.currentTool = currentTool
         v.currentColor = currentColor
         v.currentLineWidth = lineWidth

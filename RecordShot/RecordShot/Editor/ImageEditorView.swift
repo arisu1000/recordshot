@@ -17,22 +17,17 @@ struct ImageEditorView: View {
         VStack(spacing: 0) {
             toolbar
 
-            ScrollView([.horizontal, .vertical]) {
-                AnnotationCanvasView(
-                    baseImage: baseImage,
-                    displaySize: baseImage.size,
-                    currentTool: currentTool,
-                    currentColor: NSColor(selectedColor),
-                    lineWidth: lineWidth,
-                    fontSize: fontSize,
-                    onReady: { view in
-                        DispatchQueue.main.async { canvasView = view }
-                    }
-                )
-                .frame(width: baseImage.size.width, height: baseImage.size.height)
-                .cursor(for: currentTool)
-            }
-            .background(Color(NSColor.underPageBackgroundColor))
+            AnnotationCanvasView(
+                baseImage: baseImage,
+                currentTool: currentTool,
+                currentColor: NSColor(selectedColor),
+                lineWidth: lineWidth,
+                fontSize: fontSize,
+                onReady: { view in
+                    DispatchQueue.main.async { canvasView = view }
+                }
+            )
+            .cursor(for: currentTool)
 
             actionBar
         }
@@ -136,8 +131,11 @@ struct ImageEditorView: View {
 
                 Button {
                     guard let edited = canvasView?.renderToFinalImage() else { return }
-                    ClipboardManager.copyImage(edited)
-                    onComplete(edited)
+                    let result = edited
+                    DispatchQueue.main.async {
+                        ClipboardManager.copyImage(result)
+                        onComplete(result)
+                    }
                 } label: {
                     Label("클립보드에 복사", systemImage: "doc.on.clipboard")
                 }
@@ -146,7 +144,10 @@ struct ImageEditorView: View {
 
                 Button {
                     guard let edited = canvasView?.renderToFinalImage() else { return }
-                    onComplete(edited)
+                    let result = edited
+                    DispatchQueue.main.async {
+                        onComplete(result)
+                    }
                 } label: {
                     Label("완료", systemImage: "checkmark")
                 }

@@ -34,8 +34,9 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
             let filter = SCContentFilter(display: display, excludingWindows: [])
             let config = SCStreamConfiguration()
-            config.width = display.width * 2  // Retina
-            config.height = display.height * 2
+            let scaleFactor = Int(NSScreen.main?.backingScaleFactor ?? 2.0)
+            config.width = display.width * scaleFactor
+            config.height = display.height * scaleFactor
             config.scalesToFit = false
 
             let image = try await captureImage(filter: filter, config: config)
@@ -59,9 +60,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             let config = SCStreamConfiguration()
 
             // region은 RegionSelector에서 이미 top-left origin으로 변환됨
+            let scaleFactor = Int(NSScreen.main?.backingScaleFactor ?? 2.0)
             config.sourceRect = region
-            config.width = Int(region.width) * 2
-            config.height = Int(region.height) * 2
+            config.width = Int(region.width) * scaleFactor
+            config.height = Int(region.height) * scaleFactor
             config.scalesToFit = false
 
             let image = try await captureImage(filter: filter, config: config)
@@ -116,14 +118,12 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             CGImageDestinationFinalize(dest)
         }
 
-        // 논리 크기(포인트)로 설정 — region이 있으면 선택 영역 크기, 없으면 스케일로 나눔
-        let logicalSize: NSSize
-        if let region = region {
-            logicalSize = NSSize(width: region.width, height: region.height)
-        } else {
-            let scale = NSScreen.main?.backingScaleFactor ?? 1.0
-            logicalSize = NSSize(width: CGFloat(image.width) / scale, height: CGFloat(image.height) / scale)
-        }
+        // 논리 크기(포인트)로 설정 — 항상 실제 CGImage 픽셀 크기에서 계산
+        let scale = NSScreen.main?.backingScaleFactor ?? 1.0
+        let logicalSize = NSSize(
+            width: CGFloat(image.width) / scale,
+            height: CGFloat(image.height) / scale
+        )
         let nsImage = NSImage(cgImage: image, size: logicalSize)
 
         lastCaptureThumbnail = nsImage.thumbnail(maxSize: CGSize(width: 240, height: 80))
