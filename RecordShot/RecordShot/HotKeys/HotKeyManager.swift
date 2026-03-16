@@ -75,15 +75,15 @@ class HotKeyManager {
 
         let cmdShift = CGEventFlags([.maskCommand, .maskShift])
 
-        // Check screenshot shortcut (Cmd+Shift+3 by default, keycode 20 = '3')
+        // ⌘⇧3 — Full screenshot
         if flags.intersection([.maskCommand, .maskShift, .maskAlternate, .maskControl]) == cmdShift && keyCode == 20 {
             Task { @MainActor in
                 await ScreenCaptureManager.shared.takeFullScreenshot()
             }
-            return nil // Consume the event
+            return nil
         }
 
-        // Check region screenshot shortcut (Cmd+Shift+4, keycode 21 = '4')
+        // ⌘⇧4 — Region screenshot
         if flags.intersection([.maskCommand, .maskShift, .maskAlternate, .maskControl]) == cmdShift && keyCode == 21 {
             Task { @MainActor in
                 await ScreenCaptureManager.shared.takeRegionScreenshot()
@@ -91,7 +91,8 @@ class HotKeyManager {
             return nil
         }
 
-        // Check recording shortcut (Cmd+Shift+5, keycode 23 = '5')
+        #if DEBUG
+        // ⌘⇧5 — Toggle recording
         if flags.intersection([.maskCommand, .maskShift, .maskAlternate, .maskControl]) == cmdShift && keyCode == 23 {
             Task { @MainActor in
                 let manager = ScreenCaptureManager.shared
@@ -103,6 +104,18 @@ class HotKeyManager {
             }
             return nil
         }
+
+        // ⌘⇧6 — Region recording
+        if flags.intersection([.maskCommand, .maskShift, .maskAlternate, .maskControl]) == cmdShift && keyCode == 22 {
+            Task { @MainActor in
+                let manager = ScreenCaptureManager.shared
+                if !manager.isRecording {
+                    await manager.startRegionRecording()
+                }
+            }
+            return nil
+        }
+        #endif
 
         return Unmanaged.passRetained(event)
     }

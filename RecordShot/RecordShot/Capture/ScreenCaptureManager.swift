@@ -11,12 +11,14 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     @Published var isRecording = false
     @Published var recordingTimeString = "00:00"
     @Published var lastCaptureThumbnail: NSImage?
+    @Published var lastRecordingURL: URL?
 
     private var recordingSession: RecordingSession?
     private var recordingTimer: Timer?
     private var recordingStartTime: Date?
     private let settings = AppSettings.shared
     private var editorWindows: [ImageEditorWindow] = []
+    private var regionIndicator: RecordingRegionIndicator?
 
     override init() {
         super.init()
@@ -151,6 +153,15 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     // MARK: - Recording
 
     func startRecording() async {
+        await startRecordingCore(region: nil)
+    }
+
+    func startRegionRecording() async {
+        guard let region = await RegionSelector.selectRegion() else { return }
+        await startRecordingCore(region: region)
+    }
+
+    private func startRecordingCore(region: CGRect?) async {
         guard !isRecording else { return }
 
         do {
@@ -162,15 +173,44 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
             let filter = SCContentFilter(display: display, excludingWindows: [])
             let config = SCStreamConfiguration()
-            config.width = display.width
-            config.height = display.height
+
+            let baseWidth: Int
+            let baseHeight: Int
+            if let region = region {
+                config.sourceRect = region
+                baseWidth = Int(region.width)
+                baseHeight = Int(region.height)
+            } else {
+                baseWidth = display.width
+                baseHeight = display.height
+            }
+
+            let format = RecordingFormat(rawValue: settings.recordingFormat) ?? .mp4
+
+            // H.264/HEVC require even dimensions; GIF captures at half resolution
+            let captureWidth: Int
+            let captureHeight: Int
+            if format == .gif {
+                captureWidth  = max(2, (baseWidth  / 2) & ~1)
+                captureHeight = max(2, (baseHeight / 2) & ~1)
+            } else {
+                captureWidth  = baseWidth  & ~1
+                captureHeight = baseHeight & ~1
+            }
+
+            config.width = captureWidth
+            config.height = captureHeight
             config.minimumFrameInterval = CMTime(value: 1, timescale: 30) // 30 fps
             if #available(macOS 13.0, *) {
                 config.capturesAudio = false
             }
 
-            let outputURL = generateFileURL(prefix: "recording", ext: "mp4")
-            recordingSession = try RecordingSession(outputURL: outputURL, displaySize: CGSize(width: display.width, height: display.height))
+            let outputURL = generateFileURL(prefix: "recording", ext: format.fileExtension, isRecording: true)
+            recordingSession = try RecordingSession(
+                outputURL: outputURL,
+                displaySize: CGSize(width: captureWidth, height: captureHeight),
+                format: format
+            )
 
             let stream = SCStream(filter: filter, configuration: config, delegate: self)
             try stream.addStreamOutput(recordingSession!, type: .screen, sampleHandlerQueue: .global())
@@ -183,6 +223,11 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             recordingStartTime = Date()
             startRecordingTimer()
             NotificationCenter.default.post(name: .recordingStateChanged, object: nil)
+
+            if let region = region {
+                regionIndicator = RecordingRegionIndicator()
+                regionIndicator?.show(region: region)
+            }
 
             // Auto-stop if duration set
             if settings.maxRecordingDuration > 0 {
@@ -200,6 +245,8 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
         isRecording = false
         stopRecordingTimer()
+        regionIndicator?.hide()
+        regionIndicator = nil
         NotificationCenter.default.post(name: .recordingStateChanged, object: nil)
 
         if let stream = session.stream {
@@ -208,7 +255,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
         await session.stopWriting()
 
-        showNotification(title: NSLocalizedString("notification.recordingSaved", comment: ""), body: session.outputURL.lastPathComponent)
+        let savedURL = session.outputURL
+        lastRecordingURL = savedURL
+        showNotification(title: NSLocalizedString("notification.recordingSaved", comment: ""), body: savedURL.lastPathComponent)
+        NSWorkspace.shared.activateFileViewerSelecting([savedURL])
         recordingSession = nil
     }
 
@@ -232,18 +282,18 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
     // MARK: - Helpers
 
-    private func generateFileURL(prefix: String, ext: String) -> URL {
+    private func generateFileURL(prefix: String, ext: String, isRecording: Bool = false) -> URL {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         let timestamp = formatter.string(from: Date())
         let filename = "\(prefix)_\(timestamp).\(ext)"
 
-        let saveDir: URL
-        if settings.savePath.isEmpty {
-            saveDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
-        } else {
-            saveDir = URL(fileURLWithPath: settings.savePath)
-        }
+        let pathStr = isRecording ? settings.recordingSavePath : settings.savePath
+        let desktop = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
+        let saveDir = pathStr.isEmpty ? desktop : URL(fileURLWithPath: pathStr)
+
+        // Create directory if it doesn't exist
+        try? FileManager.default.createDirectory(at: saveDir, withIntermediateDirectories: true)
 
         return saveDir.appendingPathComponent(filename)
     }

@@ -28,6 +28,7 @@ class MenuBarController: NSObject {
 
     private func updateStatusItemIcon(isRecording: Bool) {
         if let button = statusItem.button {
+            #if DEBUG
             let iconName = isRecording ? "record.circle.fill" : "camera.fill"
             let image = NSImage(systemSymbolName: iconName, accessibilityDescription: nil)
             image?.isTemplate = !isRecording
@@ -37,6 +38,12 @@ class MenuBarController: NSObject {
                 button.contentTintColor = nil
             }
             button.image = image
+            #else
+            let image = NSImage(systemSymbolName: "camera.fill", accessibilityDescription: nil)
+            image?.isTemplate = true
+            button.contentTintColor = nil
+            button.image = image
+            #endif
         }
     }
 
@@ -52,19 +59,23 @@ class MenuBarController: NSObject {
     }
 
     private func setupObservers() {
+        #if DEBUG
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(recordingStateChanged),
             name: .recordingStateChanged,
             object: nil
         )
+        #endif
     }
 
+    #if DEBUG
     @objc private func recordingStateChanged() {
         DispatchQueue.main.async { [weak self] in
             self?.updateStatusItemIcon(isRecording: self?.captureManager.isRecording ?? false)
         }
     }
+    #endif
 
     @objc func togglePopover(_ sender: NSStatusBarButton) {
         let event = NSApp.currentEvent
@@ -97,13 +108,16 @@ class MenuBarController: NSObject {
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu.regionScreenshot", comment: ""), action: #selector(takeRegionScreenshot), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
 
+        #if DEBUG
         if captureManager.isRecording {
             menu.addItem(NSMenuItem(title: NSLocalizedString("menu.stopRecording", comment: ""), action: #selector(stopRecording), keyEquivalent: ""))
         } else {
             menu.addItem(NSMenuItem(title: NSLocalizedString("menu.startRecording", comment: ""), action: #selector(startRecording), keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: NSLocalizedString("menu.regionRecord", comment: ""), action: #selector(startRegionRecording), keyEquivalent: ""))
         }
-
         menu.addItem(NSMenuItem.separator())
+        #endif
+
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu.settingsMenu", comment: ""), action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu.quitApp", comment: ""), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
@@ -123,13 +137,19 @@ class MenuBarController: NSObject {
         Task { await captureManager.takeRegionScreenshot() }
     }
 
+    #if DEBUG
     @objc private func startRecording() {
         Task { await captureManager.startRecording() }
+    }
+
+    @objc private func startRegionRecording() {
+        Task { await captureManager.startRegionRecording() }
     }
 
     @objc private func stopRecording() {
         Task { await captureManager.stopRecording() }
     }
+    #endif
 
     @objc private func openSettings() {
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)

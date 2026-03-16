@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var captureManager: ScreenCaptureManager
+    @ObservedObject private var settings = AppSettings.shared
     let closePopover: () -> Void
     @State private var lastCaptureThumbnail: NSImage?
 
@@ -14,11 +15,13 @@ struct MenuBarView: View {
                 Text("RecordShot")
                     .font(.headline)
                 Spacer()
+                #if DEBUG
                 if captureManager.isRecording {
                     Label(captureManager.recordingTimeString, systemImage: "record.circle.fill")
                         .foregroundColor(.red)
                         .font(.caption)
                 }
+                #endif
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -48,7 +51,25 @@ struct MenuBarView: View {
                     }
                 }
 
-                // Recording button
+                #if DEBUG
+                // Format picker — only when not recording
+                if !captureManager.isRecording {
+                    HStack(spacing: 6) {
+                        Text(NSLocalizedString("menu.format", comment: ""))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Picker("", selection: $settings.recordingFormat) {
+                            ForEach(RecordingFormat.allCases) { fmt in
+                                Text(fmt.fileExtension.uppercased()).tag(fmt.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                    }
+                    .padding(.horizontal, 4)
+                }
+
+                // Recording buttons
                 if captureManager.isRecording {
                     Button(action: {
                         Task { await captureManager.stopRecording() }
@@ -70,20 +91,58 @@ struct MenuBarView: View {
                     }
                     .buttonStyle(.plain)
                 } else {
-                    ActionButton(
-                        icon: "record.circle",
-                        title: NSLocalizedString("menu.recordScreen", comment: ""),
-                        subtitle: "⌘⇧5",
-                        fullWidth: true
-                    ) {
-                        closePopover()
-                        Task { await captureManager.startRecording() }
+                    HStack(spacing: 8) {
+                        ActionButton(
+                            icon: "record.circle",
+                            title: NSLocalizedString("menu.recordScreen", comment: ""),
+                            subtitle: "⌘⇧5"
+                        ) {
+                            closePopover()
+                            Task { await captureManager.startRecording() }
+                        }
+                        ActionButton(
+                            icon: "record.circle.fill",
+                            title: NSLocalizedString("menu.regionRecord", comment: ""),
+                            subtitle: "⌘⇧6"
+                        ) {
+                            closePopover()
+                            Task { await captureManager.startRegionRecording() }
+                        }
                     }
                 }
+                #endif
             }
             .padding(12)
 
             Divider()
+
+            #if DEBUG
+            // Last recording
+            if let recordingURL = captureManager.lastRecordingURL {
+                Divider()
+                HStack(spacing: 6) {
+                    Image(systemName: "film")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                    Text(recordingURL.lastPathComponent)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Spacer()
+                    Button {
+                        NSWorkspace.shared.activateFileViewerSelecting([recordingURL])
+                    } label: {
+                        Image(systemName: "folder")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                    .help(NSLocalizedString("menu.revealInFinder", comment: ""))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+            }
+            #endif
 
             // Last capture thumbnail
             if let thumbnail = captureManager.lastCaptureThumbnail {

@@ -23,6 +23,9 @@
 "menu.stopRecording" = "녹화 중지";
 "menu.startRecording" = "녹화 시작";
 "menu.recordScreen" = "화면 녹화";
+"menu.regionRecord" = "영역 녹화";
+"menu.format" = "형식:";
+"menu.revealInFinder" = "Finder에서 보기";
 "menu.lastCapture" = "마지막 캡처";
 "menu.settings" = "설정";
 "menu.quit" = "종료";
@@ -39,6 +42,9 @@
 "settings.choose" = "선택...";
 "settings.autoCopy" = "캡처 후 클립보드에 자동 복사";
 "settings.recording" = "녹화";
+"settings.recordingSaveLocation" = "저장 위치";
+"settings.recordingFormat" = "파일 형식";
+"settings.gifNote" = "GIF는 짧은 클립(15초 이하)에 적합합니다. 50% 크기, 10fps로 캡처됩니다.";
 "settings.maxDuration" = "최대 녹화 시간";
 "settings.unlimited" = "무제한";
 "settings.noTimeLimit" = "시간 제한 없음";
@@ -47,6 +53,7 @@
 "settings.screenshot" = "스크린샷";
 "settings.regionScreenshot" = "영역 스크린샷";
 "settings.toggleRecording" = "녹화 전환";
+"settings.regionRecord" = "영역 녹화";
 "settings.shortcutNote" = "참고: 글로벌 단축키를 사용하려면 손쉬운 사용 권한이 필요합니다";
 "settings.openAccessibility" = "손쉬운 사용 설정 열기";
 "settings.about" = "정보";

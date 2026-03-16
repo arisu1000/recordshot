@@ -23,6 +23,9 @@
 "menu.stopRecording" = "Stop Recording";
 "menu.startRecording" = "Start Recording";
 "menu.recordScreen" = "Record Screen";
+"menu.regionRecord" = "Region Record";
+"menu.format" = "Format:";
+"menu.revealInFinder" = "Reveal in Finder";
 "menu.lastCapture" = "Last Capture";
 "menu.settings" = "Settings";
 "menu.quit" = "Quit";
@@ -39,6 +42,9 @@
 "settings.choose" = "Choose...";
 "settings.autoCopy" = "Copy to Clipboard after Capture";
 "settings.recording" = "Recording";
+"settings.recordingSaveLocation" = "Save Location";
+"settings.recordingFormat" = "Format";
+"settings.gifNote" = "GIF is best for short clips (≤15 seconds). Frames are captured at 50% size and 10fps.";
 "settings.maxDuration" = "Max Duration";
 "settings.unlimited" = "Unlimited";
 "settings.noTimeLimit" = "No time limit";
@@ -47,6 +53,7 @@
 "settings.screenshot" = "Screenshot";
 "settings.regionScreenshot" = "Region Screenshot";
 "settings.toggleRecording" = "Toggle Recording";
+"settings.regionRecord" = "Region Record";
 "settings.shortcutNote" = "Note: Requires Accessibility permission to use global shortcuts";
 "settings.openAccessibility" = "Open Accessibility Settings";
 "settings.about" = "About";

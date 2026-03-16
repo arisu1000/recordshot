@@ -19,6 +19,12 @@ class AppSettings: ObservableObject {
     @Published var recordingShortcut: String {
         didSet { UserDefaults.standard.set(recordingShortcut, forKey: "recordingShortcut") }
     }
+    @Published var recordingFormat: String {
+        didSet { UserDefaults.standard.set(recordingFormat, forKey: "recordingFormat") }
+    }
+    @Published var recordingSavePath: String {
+        didSet { UserDefaults.standard.set(recordingSavePath, forKey: "recordingSavePath") }
+    }
 
     private init() {
         let defaults = UserDefaults.standard
@@ -31,5 +37,7 @@ class AppSettings: ObservableObject {
         maxRecordingDuration = defaults.object(forKey: "maxRecordingDuration") as? Int ?? 0
         screenshotShortcut = defaults.string(forKey: "screenshotShortcut") ?? "⌘⇧3"
         recordingShortcut = defaults.string(forKey: "recordingShortcut") ?? "⌘⇧5"
+        recordingFormat = defaults.string(forKey: "recordingFormat") ?? RecordingFormat.mp4.rawValue
+        recordingSavePath = defaults.string(forKey: "recordingSavePath") ?? defaultPath
     }
 }

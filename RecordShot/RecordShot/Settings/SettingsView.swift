@@ -20,7 +20,34 @@ struct SettingsView: View {
                 Toggle(NSLocalizedString("settings.autoCopy", comment: ""), isOn: $settings.autoCopyToClipboard)
             }
 
+            #if DEBUG
             Section(NSLocalizedString("settings.recording", comment: "")) {
+                HStack {
+                    Text(NSLocalizedString("settings.recordingSaveLocation", comment: ""))
+                    Spacer()
+                    Text(shortenPath(settings.recordingSavePath))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: 180, alignment: .trailing)
+                    Button(NSLocalizedString("settings.choose", comment: "")) {
+                        selectRecordingFolder()
+                    }
+                }
+
+                Picker(NSLocalizedString("settings.recordingFormat", comment: ""), selection: $settings.recordingFormat) {
+                    ForEach(RecordingFormat.allCases) { fmt in
+                        Text(fmt.displayName).tag(fmt.rawValue)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                if settings.recordingFormat == RecordingFormat.gif.rawValue {
+                    Text(NSLocalizedString("settings.gifNote", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
                 HStack {
                     Text(NSLocalizedString("settings.maxDuration", comment: ""))
                     Spacer()
@@ -46,11 +73,15 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+            #endif
 
             Section(NSLocalizedString("settings.shortcuts", comment: "")) {
                 HStack { Text(NSLocalizedString("settings.screenshot", comment: "")); Spacer(); Text("⌘⇧3").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
                 HStack { Text(NSLocalizedString("settings.regionScreenshot", comment: "")); Spacer(); Text("⌘⇧4").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
+                #if DEBUG
                 HStack { Text(NSLocalizedString("settings.toggleRecording", comment: "")); Spacer(); Text("⌘⇧5").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
+                HStack { Text(NSLocalizedString("settings.regionRecord", comment: "")); Spacer(); Text("⌘⇧6").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
+                #endif
                 Text(NSLocalizedString("settings.shortcutNote", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -66,9 +97,27 @@ struct SettingsView: View {
                 HStack { Text(NSLocalizedString("settings.deploymentTarget", comment: "")); Spacer(); Text("macOS 12.3+").foregroundColor(.secondary) }
             }
         }
-        .frame(width: 450, height: 500)
+        #if DEBUG
+        .frame(width: 480, height: 560)
+        #else
+        .frame(width: 480, height: 400)
+        #endif
         .navigationTitle(NSLocalizedString("settings.title", comment: ""))
     }
+
+    #if DEBUG
+    private func selectRecordingFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = NSLocalizedString("settings.selectFolder", comment: "")
+
+        if panel.runModal() == .OK, let url = panel.url {
+            settings.recordingSavePath = url.path
+        }
+    }
+    #endif
 
     private func selectSaveFolder() {
         let panel = NSOpenPanel()
@@ -87,6 +136,6 @@ struct SettingsView: View {
         if path.hasPrefix(home) {
             return "~" + path.dropFirst(home.count)
         }
-        return path
+        return path.isEmpty ? "~/Desktop" : path
     }
 }

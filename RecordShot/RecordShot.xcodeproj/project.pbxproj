@@ -23,7 +23,9 @@
 		A014 /* AnnotationCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* AnnotationCanvasView.swift */; };
 		A015 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F017 /* ImageEditorView.swift */; };
 		A016 /* ImageEditorWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F018 /* ImageEditorWindow.swift */; };
+		RC002 /* RecordingRegionIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC001 /* RecordingRegionIndicator.swift */; };
 		LB001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = LV001 /* Localizable.strings */; };
+		ASSETS002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ASSETS001 /* Assets.xcassets */; };
 		TB001 /* AnnotationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF001 /* AnnotationModelTests.swift */; };
 		TB002 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF002 /* AppSettingsTests.swift */; };
 		TB003 /* ImageProcessingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF003 /* ImageProcessingTests.swift */; };
@@ -59,6 +61,8 @@
 		F016 /* AnnotationCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationCanvasView.swift; sourceTree = "<group>"; };
 		F017 /* ImageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorView.swift; sourceTree = "<group>"; };
 		F018 /* ImageEditorWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorWindow.swift; sourceTree = "<group>"; };
+		RC001 /* RecordingRegionIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingRegionIndicator.swift; sourceTree = "<group>"; };
+		ASSETS001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		LF001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		LF002 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		PROD /* RecordShot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecordShot.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -104,6 +108,7 @@
 				F006 /* RecordingSession.swift */,
 				F007 /* RegionSelector.swift */,
 				F014 /* CapturePreviewPanel.swift */,
+				RC001 /* RecordingRegionIndicator.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -173,6 +178,7 @@
 				SETGROUP /* Settings */,
 				UTILGROUP /* Utilities */,
 				EDITORGROUP /* Editor */,
+				ASSETS001 /* Assets.xcassets */,
 				LV001 /* Localizable.strings */,
 				F012 /* Info.plist */,
 				F013 /* RecordShot.entitlements */,
@@ -279,6 +285,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ASSETS002 /* Assets.xcassets in Resources */,
 				LB001 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -306,6 +313,7 @@
 				A014 /* AnnotationCanvasView.swift in Sources */,
 				A015 /* ImageEditorView.swift in Sources */,
 				A016 /* ImageEditorWindow.swift in Sources */,
+				RC002 /* RecordingRegionIndicator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,56 +1,92 @@
 import Foundation
 import AVFoundation
 import ScreenCaptureKit
+import CoreImage
+import ImageIO
+import UniformTypeIdentifiers
+
+// MARK: - RecordingFormat
+
+enum RecordingFormat: String, CaseIterable, Identifiable {
+    case mp4, mov, gif
+
+    var id: Self { self }
+
+    var fileExtension: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .mp4: return "MP4 (H.264)"
+        case .mov: return "MOV (H.264)"
+        case .gif: return "GIF (Animated)"
+        }
+    }
+
+    var avFileType: AVFileType? {
+        switch self {
+        case .mp4: return .mp4
+        case .mov: return .mov
+        case .gif: return nil
+        }
+    }
+}
+
+// MARK: - RecordingSession
 
 class RecordingSession: NSObject, SCStreamOutput {
     let outputURL: URL
+    let format: RecordingFormat
     weak var stream: SCStream?
 
     private var assetWriter: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
-    private var pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor?
     private var isWriting = false
     private var firstSampleTime: CMTime?
 
-    init(outputURL: URL, displaySize: CGSize) throws {
+    // GIF buffering — stream is already at half resolution (set by ScreenCaptureManager)
+    private var gifFrames: [(image: CGImage, delay: Double)] = []
+    private var lastGifFrameTime: CMTime?
+    private let gifFrameInterval: Double = 0.1   // 10 fps
+    private let gifMaxFrames = 150               // 15 seconds max
+    private let ciContext = CIContext()
+
+    init(outputURL: URL, displaySize: CGSize, format: RecordingFormat = .mp4) throws {
         self.outputURL = outputURL
+        self.format = format
         super.init()
 
-        try setupAssetWriter(size: displaySize)
+        if let fileType = format.avFileType {
+            try setupAssetWriter(size: displaySize, fileType: fileType)
+        }
     }
 
-    private func setupAssetWriter(size: CGSize) throws {
-        assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: .mp4)
+    private func setupAssetWriter(size: CGSize, fileType: AVFileType) throws {
+        // H.264 requires even dimensions
+        let w = (Int(size.width)  / 2) * 2
+        let h = (Int(size.height) / 2) * 2
 
+        assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: fileType)
+
+        // H.264 for both MP4 and MOV — maximum compatibility
         let videoSettings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.h264,
-            AVVideoWidthKey: Int(size.width),
-            AVVideoHeightKey: Int(size.height),
-            AVVideoCompressionPropertiesKey: [
-                AVVideoAverageBitRateKey: 8_000_000,
-                AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel
-            ]
+            AVVideoWidthKey: w,
+            AVVideoHeightKey: h
         ]
 
         videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
         videoInput?.expectsMediaDataInRealTime = true
 
-        let sourceAttributes: [String: Any] = [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
-            kCVPixelBufferWidthKey as String: Int(size.width),
-            kCVPixelBufferHeightKey as String: Int(size.height)
-        ]
-
         if let input = videoInput {
-            pixelBufferAdaptor = AVAssetWriterInputPixelBufferAdaptor(
-                assetWriterInput: input,
-                sourcePixelBufferAttributes: sourceAttributes
-            )
             assetWriter?.add(input)
         }
     }
 
     func startWriting() throws {
+        if format == .gif {
+            isWriting = true
+            return
+        }
         guard assetWriter?.startWriting() == true else {
             throw assetWriter?.error ?? NSError(domain: "RecordShot", code: -1)
         }
@@ -61,8 +97,12 @@ class RecordingSession: NSObject, SCStreamOutput {
         guard isWriting else { return }
         isWriting = false
 
-        videoInput?.markAsFinished()
+        if format == .gif {
+            await writeGIF()
+            return
+        }
 
+        videoInput?.markAsFinished()
         await withCheckedContinuation { continuation in
             assetWriter?.finishWriting {
                 continuation.resume()
@@ -70,11 +110,49 @@ class RecordingSession: NSObject, SCStreamOutput {
         }
     }
 
+    // MARK: - GIF export
+
+    private func writeGIF() async {
+        guard !gifFrames.isEmpty else { return }
+
+        let dest = CGImageDestinationCreateWithURL(
+            outputURL as CFURL,
+            UTType.gif.identifier as CFString,
+            gifFrames.count,
+            nil
+        )
+        guard let dest else { return }
+
+        let fileProperties: [CFString: Any] = [
+            kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFLoopCount: 0]
+        ]
+        CGImageDestinationSetProperties(dest, fileProperties as CFDictionary)
+
+        for (image, delay) in gifFrames {
+            let frameProperties: [CFString: Any] = [
+                kCGImagePropertyGIFDictionary: [
+                    kCGImagePropertyGIFDelayTime: delay,
+                    kCGImagePropertyGIFUnclampedDelayTime: delay
+                ]
+            ]
+            CGImageDestinationAddImage(dest, image, frameProperties as CFDictionary)
+        }
+
+        CGImageDestinationFinalize(dest)
+        gifFrames.removeAll()
+    }
+
     // MARK: - SCStreamOutput
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .screen, isWriting,
-              let videoInput = videoInput,
+        guard type == .screen, isWriting else { return }
+
+        if format == .gif {
+            handleGIFFrame(sampleBuffer)
+            return
+        }
+
+        guard let videoInput = videoInput,
               videoInput.isReadyForMoreMediaData else { return }
 
         let presentationTime = sampleBuffer.presentationTimeStamp
@@ -84,7 +162,26 @@ class RecordingSession: NSObject, SCStreamOutput {
             assetWriter?.startSession(atSourceTime: presentationTime)
         }
 
+        videoInput.append(sampleBuffer)
+    }
+
+    private func handleGIFFrame(_ sampleBuffer: CMSampleBuffer) {
+        guard gifFrames.count < gifMaxFrames else { return }
+
+        let presentationTime = sampleBuffer.presentationTimeStamp
+
+        if let lastTime = lastGifFrameTime {
+            let elapsed = CMTimeGetSeconds(CMTimeSubtract(presentationTime, lastTime))
+            guard elapsed >= gifFrameInterval else { return }
+        }
+
         guard let imageBuffer = sampleBuffer.imageBuffer else { return }
-        pixelBufferAdaptor?.append(imageBuffer, withPresentationTime: presentationTime)
+
+        // Stream is already at half resolution — just convert to CGImage
+        let ciImage = CIImage(cvImageBuffer: imageBuffer)
+        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
+
+        gifFrames.append((image: cgImage, delay: gifFrameInterval))
+        lastGifFrameTime = presentationTime
     }
 }
