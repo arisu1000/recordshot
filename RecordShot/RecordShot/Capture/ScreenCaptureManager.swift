@@ -138,14 +138,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         }
 
         editorWindow.open(image: nsImage) { [weak self] edited in
-            // NSBitmapImageRep에서 직접 CGImage를 추출해 full-pixel 해상도로 저장
-            let cgEdited: CGImage?
-            if let rep = edited.bestRepresentation(for: .infinite, context: nil, hints: nil) as? NSBitmapImageRep {
-                cgEdited = rep.cgImage
-            } else {
-                cgEdited = edited.cgImage(forProposedRect: nil, context: nil, hints: nil)
-            }
-            if let cg = cgEdited {
+            // 주석 없을 때 renderToFinalImage()는 baseImage(원본 NSImage)를 그대로 반환.
+            // cgImage(forProposedRect:)는 원본 CGImage와 렌더링된 CGImage 모두에서
+            // 픽셀 해상도 그대로를 반환하므로 두 경우 모두 처리 가능.
+            if let cg = edited.cgImage(forProposedRect: nil, context: nil, hints: nil) {
                 self?.savePNG(cg, to: url, scale: scale)
             }
             self?.showNotification(title: NSLocalizedString("notification.saved", comment: ""), body: url.lastPathComponent)

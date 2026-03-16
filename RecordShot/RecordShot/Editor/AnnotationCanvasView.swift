@@ -242,10 +242,13 @@ class AnnotationCanvasNSView: NSView {
         // Commit any in-flight annotation
         if let tf = activeTextField { commitTextField(tf) }
 
+        // No annotations → return original image untouched (zero quality loss)
+        if annotations.isEmpty { return baseImage }
+
         let origSize = baseImage.size           // logical size (points)
         let scaleUp = origSize.width / bounds.width  // view → logical
 
-        // Get the base CGImage so we always work in full pixel resolution
+        // Get the base CGImage to work in full pixel resolution
         guard let cgBase = baseImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             return baseImage
         }
@@ -268,7 +271,6 @@ class AnnotationCanvasNSView: NSView {
                     width: ann.rect.width  * viewToPixel,
                     height: ann.rect.height * viewToPixel
                 )
-                // CIImage uses bottom-left origin
                 let ciRect = CGRect(
                     x: pixelRect.origin.x,
                     y: CGFloat(pixelH) - pixelRect.origin.y - pixelRect.height,
@@ -287,34 +289,32 @@ class AnnotationCanvasNSView: NSView {
             }
         }
 
-        // Step 2: Render non-blur annotations at full pixel resolution via NSBitmapImageRep
-        // This avoids the 1x downscale that lockFocus() causes on Retina displays.
-        guard let rep = NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: pixelW, pixelsHigh: pixelH,
-            bitsPerSample: 8, samplesPerPixel: 4,
-            hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB,
-            bytesPerRow: 0, bitsPerPixel: 32
+        // Step 2: Render non-blur annotations at full pixel resolution.
+        // Use a raw CGContext scaled by pixelScale so all drawing uses point coordinates —
+        // identical coordinate space to the view, but producing pixelW × pixelH output pixels.
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        guard let cgCtx = CGContext(
+            data: nil,
+            width: pixelW, height: pixelH,
+            bitsPerComponent: 8, bytesPerRow: 0,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
         ) else { return baseImage }
-        rep.size = origSize  // preserve logical size → correct DPI in exported PNG
 
+        cgCtx.scaleBy(x: pixelScale, y: pixelScale)  // pixel → point coordinate space
+
+        let gc = NSGraphicsContext(cgContext: cgCtx, flipped: false)
         NSGraphicsContext.saveGraphicsState()
-        guard let ctx = NSGraphicsContext(bitmapImageRep: rep) else {
-            NSGraphicsContext.restoreGraphicsState()
-            return baseImage
-        }
-        NSGraphicsContext.current = ctx
+        NSGraphicsContext.current = gc
 
-        // Draw base image at full pixel size (context is in pixel coordinates)
+        // Draw base image at logical (point) size — context scale handles Retina pixels
         NSImage(cgImage: workingCGImage, size: origSize)
-            .draw(in: CGRect(x: 0, y: 0, width: pixelW, height: pixelH))
+            .draw(in: CGRect(origin: .zero, size: origSize))
 
-        // Transform: view coords → pixel coords with Y flip (pixel context is bottom-left)
-        let viewToPixel = scaleUp * pixelScale
+        // Transform: view coords (top-left) → point coords (bottom-left) with Y flip
         let xform = NSAffineTransform()
-        xform.translateX(by: 0, yBy: CGFloat(pixelH))
-        xform.scaleX(by: viewToPixel, yBy: -viewToPixel)
+        xform.translateX(by: 0, yBy: origSize.height)
+        xform.scaleX(by: scaleUp, yBy: -scaleUp)
         xform.concat()
 
         for ann in annotations where ann.tool != .blur {
@@ -323,9 +323,8 @@ class AnnotationCanvasNSView: NSView {
 
         NSGraphicsContext.restoreGraphicsState()
 
-        let result = NSImage(size: origSize)
-        result.addRepresentation(rep)
-        return result
+        guard let resultCG = cgCtx.makeImage() else { return baseImage }
+        return NSImage(cgImage: resultCG, size: origSize)
     }
 
     private func drawAnnotationForExport(_ ann: Annotation) {
