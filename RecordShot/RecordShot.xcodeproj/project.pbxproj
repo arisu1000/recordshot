@@ -23,6 +23,10 @@
 		A014 /* AnnotationCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* AnnotationCanvasView.swift */; };
 		A015 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F017 /* ImageEditorView.swift */; };
 		A016 /* ImageEditorWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F018 /* ImageEditorWindow.swift */; };
+		TB001 /* AnnotationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF001 /* AnnotationModelTests.swift */; };
+		TB002 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF002 /* AppSettingsTests.swift */; };
+		TB003 /* ImageProcessingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF003 /* ImageProcessingTests.swift */; };
+		TB004 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = TFWK /* XCTest.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,13 +49,36 @@
 		F017 /* ImageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorView.swift; sourceTree = "<group>"; };
 		F018 /* ImageEditorWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorWindow.swift; sourceTree = "<group>"; };
 		PROD /* RecordShot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecordShot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		TF001 /* AnnotationModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModelTests.swift; sourceTree = "<group>"; };
+		TF002 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
+		TF003 /* ImageProcessingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessingTests.swift; sourceTree = "<group>"; };
+		TFWK /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		TPROD /* RecordShotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecordShotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		TPROXY /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PROJECT /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TARGET;
+			remoteInfo = RecordShot;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		FWKBUILDPHASE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TFWKPHASE /* Frameworks (Tests) */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TB004 /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				SRCGROUP /* RecordShot */,
+				TESTGROUP /* RecordShotTests */,
 				PRODGROUP /* Products */,
 			);
 			sourceTree = "<group>";
@@ -107,8 +135,19 @@
 			isa = PBXGroup;
 			children = (
 				PROD /* RecordShot.app */,
+				TPROD /* RecordShotTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		TESTGROUP /* RecordShotTests */ = {
+			isa = PBXGroup;
+			children = (
+				TF001 /* AnnotationModelTests.swift */,
+				TF002 /* AppSettingsTests.swift */,
+				TF003 /* ImageProcessingTests.swift */,
+			);
+			path = RecordShotTests;
 			sourceTree = "<group>";
 		};
 		SETGROUP /* Settings */ = {
@@ -175,7 +214,32 @@
 			productReference = PROD /* RecordShot.app */;
 			productType = "com.apple.product-type.application";
 		};
+		TTARGET /* RecordShotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TTARGCONFLIST /* Build configuration list for PBXNativeTarget "RecordShotTests" */;
+			buildPhases = (
+				TSRCPHASE /* Sources */,
+				TFWKPHASE /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TDEP /* PBXTargetDependency */,
+			);
+			name = RecordShotTests;
+			productName = RecordShotTests;
+			productReference = TPROD /* RecordShotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXTargetDependency section */
+		TDEP /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TARGET /* RecordShot */;
+			targetProxy = TPROXY /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		PROJECT /* Project object */ = {
@@ -187,6 +251,10 @@
 				TargetAttributes = {
 					TARGET = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					TTARGET = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = TARGET;
 					};
 				};
 			};
@@ -204,9 +272,23 @@
 			projectRoot = "";
 			targets = (
 				TARGET /* RecordShot */,
+				TTARGET /* RecordShotTests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		TSRCPHASE /* Sources (Tests) */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TB001 /* AnnotationModelTests.swift in Sources */,
+				TB002 /* AppSettingsTests.swift in Sources */,
+				TB003 /* ImageProcessingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		RESBUILDPHASE /* Resources */ = {
@@ -414,6 +496,44 @@
 			};
 			name = Release;
 		};
+		TTARGDEBUG /* Debug (Tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7XMRKVJU54;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.recordshot.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RecordShot.app/Contents/MacOS/RecordShot";
+			};
+			name = Debug;
+		};
+		TTARGRELEASE /* Release (Tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7XMRKVJU54;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.recordshot.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RecordShot.app/Contents/MacOS/RecordShot";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -431,6 +551,15 @@
 			buildConfigurations = (
 				TARGETDEBUG /* Debug */,
 				TARGETRELEASE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TTARGCONFLIST /* Build configuration list for PBXNativeTarget "RecordShotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TTARGDEBUG /* Debug */,
+				TTARGRELEASE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
