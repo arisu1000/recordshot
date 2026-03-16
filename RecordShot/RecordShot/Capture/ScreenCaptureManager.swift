@@ -16,7 +16,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     private var recordingTimer: Timer?
     private var recordingStartTime: Date?
     private let settings = AppSettings.shared
-    private let editorWindow = ImageEditorWindow()
+    private var editorWindows: [ImageEditorWindow] = []
 
     override init() {
         super.init()
@@ -128,7 +128,16 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
         lastCaptureThumbnail = nsImage.thumbnail(maxSize: CGSize(width: 240, height: 80))
 
-        // 편집 창을 바로 열기 — 완료 시 저장된 파일에 덮어쓰고 알림 표시
+        // 편집 창을 바로 열기 — 캡처마다 새 인스턴스를 생성해 독립적으로 동작
+        let editorWindow = ImageEditorWindow()
+        editorWindows.append(editorWindow)
+
+        editorWindow.onDismiss = { [weak self, weak editorWindow] in
+            if let w = editorWindow {
+                self?.editorWindows.removeAll { $0 === w }
+            }
+        }
+
         editorWindow.open(image: nsImage) { [weak self] edited in
             if let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil),
                let cgEdited = edited.cgImage(forProposedRect: nil, context: nil, hints: nil) {

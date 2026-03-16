@@ -5,9 +5,9 @@ import SwiftUI
 class ImageEditorWindow: NSObject, NSWindowDelegate {
     private var window: NSWindow?
 
-    func open(image: NSImage, onComplete: @escaping (NSImage) -> Void) {
-        close()
+    var onDismiss: (() -> Void)?
 
+    func open(image: NSImage, onComplete: @escaping (NSImage) -> Void) {
         let screen = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let chrome: CGFloat = 56 + 52  // toolbar + action bar
 
@@ -39,10 +39,16 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
                 baseImage: image,
                 onComplete: { [weak self] edited in
                     onComplete(edited)
-                    DispatchQueue.main.async { self?.close() }
+                    DispatchQueue.main.async {
+                        self?.close()
+                        self?.onDismiss?()
+                    }
                 },
                 onCancel: { [weak self] in
-                    DispatchQueue.main.async { self?.close() }
+                    DispatchQueue.main.async {
+                        self?.close()
+                        self?.onDismiss?()
+                    }
                 }
             )
         )
