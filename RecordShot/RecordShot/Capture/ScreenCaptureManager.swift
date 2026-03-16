@@ -36,9 +36,9 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
             let filter = SCContentFilter(display: display, excludingWindows: [])
             let config = SCStreamConfiguration()
-            let scaleFactor = Int(NSScreen.main?.backingScaleFactor ?? 2.0)
-            config.width = display.width * scaleFactor
-            config.height = display.height * scaleFactor
+            // SCDisplay.width/height는 이미 물리 픽셀 단위 — scaleFactor 곱하지 않음
+            config.width = display.width
+            config.height = display.height
             config.scalesToFit = false
 
             let image = try await captureImage(filter: filter, config: config)
@@ -61,9 +61,16 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             let filter = SCContentFilter(display: display, excludingWindows: [])
             let config = SCStreamConfiguration()
 
-            // region은 RegionSelector에서 이미 top-left origin으로 변환됨
-            let scaleFactor = Int(NSScreen.main?.backingScaleFactor ?? 2.0)
-            config.sourceRect = region
+            // region은 포인트 좌표 — SCStreamConfiguration.sourceRect은 픽셀 좌표를 기대하므로 변환
+            let scale = NSScreen.main?.backingScaleFactor ?? 2.0
+            let scaleFactor = Int(scale)
+            let pixelRegion = CGRect(
+                x: region.origin.x * scale,
+                y: region.origin.y * scale,
+                width: region.width * scale,
+                height: region.height * scale
+            )
+            config.sourceRect = pixelRegion
             config.width = Int(region.width) * scaleFactor
             config.height = Int(region.height) * scaleFactor
             config.scalesToFit = false
@@ -118,7 +125,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
         savePNG(image, to: url, scale: scale)
 
-        // 논리 크기(포인트)로 설정 — 항상 실제 CGImage 픽셀 크기에서 계산
+        // 논리 크기(포인트)로 설정 — 캔버스 frame이 올바른 포인트 크기를 갖도록 보장
         let logicalSize = NSSize(
             width: CGFloat(image.width) / scale,
             height: CGFloat(image.height) / scale

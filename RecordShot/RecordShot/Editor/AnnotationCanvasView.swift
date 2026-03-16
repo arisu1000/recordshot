@@ -22,6 +22,14 @@ class AnnotationCanvasNSView: NSView {
     private var pendingTextAnnotationId: UUID?
 
     override var isFlipped: Bool { true }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        // Retina 디스플레이에서 full-pixel 해상도로 렌더링하도록 설정
+        if let scale = window?.backingScaleFactor {
+            layer?.contentsScale = scale
+        }
+    }
     override var acceptsFirstResponder: Bool { true }
     override var intrinsicContentSize: NSSize { baseImage?.size ?? super.intrinsicContentSize }
 
@@ -31,8 +39,17 @@ class AnnotationCanvasNSView: NSView {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
         ctx.saveGState()
 
-        // Base image — flipped 뷰에서 올바른 방향으로 그리기
-        if let img = baseImage {
+        // Base image — CGImage를 직접 그려서 NSImage 변환 품질 손실 방지
+        if let cgImg = baseCGImage {
+            // isFlipped=true 뷰에서 CGContext는 top-left origin이므로
+            // CGImage는 bottom-left origin → Y축 뒤집기 필요
+            ctx.saveGState()
+            ctx.translateBy(x: 0, y: bounds.height)
+            ctx.scaleBy(x: 1, y: -1)
+            ctx.interpolationQuality = .high
+            ctx.draw(cgImg, in: bounds)
+            ctx.restoreGState()
+        } else if let img = baseImage {
             img.draw(in: bounds,
                      from: NSRect(origin: .zero, size: img.size),
                      operation: .sourceOver,
