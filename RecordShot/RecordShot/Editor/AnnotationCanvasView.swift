@@ -242,64 +242,89 @@ class AnnotationCanvasNSView: NSView {
         // Commit any in-flight annotation
         if let tf = activeTextField { commitTextField(tf) }
 
-        let origSize = baseImage.size
-        let scaleUp = origSize.width / bounds.width
+        let origSize = baseImage.size           // logical size (points)
+        let scaleUp = origSize.width / bounds.width  // view → logical
 
-        // Step 1: Apply blur regions via CIFilter on the base image
-        var workingImage = baseImage
+        // Get the base CGImage so we always work in full pixel resolution
+        guard let cgBase = baseImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return baseImage
+        }
+        let pixelW = cgBase.width
+        let pixelH = cgBase.height
+        let pixelScale = CGFloat(pixelW) / origSize.width   // points → pixels
+
+        // Step 1: Apply blur via CIFilter in pixel space
+        var workingCGImage = cgBase
         let blurAnns = annotations.filter { $0.tool == .blur }
-        if !blurAnns.isEmpty, let tiff = baseImage.tiffRepresentation,
-           let ciBase = CIImage(data: tiff) {
-
-            var ciImg = ciBase
+        if !blurAnns.isEmpty {
+            var ciImg = CIImage(cgImage: cgBase)
             let ciContext = CIContext()
+            let viewToPixel = scaleUp * pixelScale  // view coords → pixel coords
 
             for ann in blurAnns {
-                // Scale rect to original pixel coords; CIImage uses bottom-left
-                let scaledRect = CGRect(
-                    x: ann.rect.origin.x * scaleUp,
-                    y: ann.rect.origin.y * scaleUp,
-                    width: ann.rect.width * scaleUp,
-                    height: ann.rect.height * scaleUp
+                let pixelRect = CGRect(
+                    x: ann.rect.origin.x * viewToPixel,
+                    y: ann.rect.origin.y * viewToPixel,
+                    width: ann.rect.width  * viewToPixel,
+                    height: ann.rect.height * viewToPixel
                 )
+                // CIImage uses bottom-left origin
                 let ciRect = CGRect(
-                    x: scaledRect.origin.x,
-                    y: origSize.height - scaledRect.origin.y - scaledRect.height,
-                    width: scaledRect.width,
-                    height: scaledRect.height
+                    x: pixelRect.origin.x,
+                    y: CGFloat(pixelH) - pixelRect.origin.y - pixelRect.height,
+                    width: pixelRect.width,
+                    height: pixelRect.height
                 )
                 let blurred = ciImg
                     .cropped(to: ciRect)
-                    .applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: 14])
+                    .applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: 14.0 * pixelScale])
                     .cropped(to: ciRect)
                 ciImg = blurred.composited(over: ciImg)
             }
 
-            if let cgResult = ciContext.createCGImage(ciImg, from: ciImg.extent) {
-                workingImage = NSImage(cgImage: cgResult, size: origSize)
+            if let result = ciContext.createCGImage(ciImg, from: ciImg.extent) {
+                workingCGImage = result
             }
         }
 
-        // Step 2: Draw all non-blur annotations on top
-        let result = NSImage(size: origSize)
-        result.lockFocus()
+        // Step 2: Render non-blur annotations at full pixel resolution via NSBitmapImageRep
+        // This avoids the 1x downscale that lockFocus() causes on Retina displays.
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelW, pixelsHigh: pixelH,
+            bitsPerSample: 8, samplesPerPixel: 4,
+            hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0, bitsPerPixel: 32
+        ) else { return baseImage }
+        rep.size = origSize  // preserve logical size → correct DPI in exported PNG
 
-        workingImage.draw(in: NSRect(origin: .zero, size: origSize))
+        NSGraphicsContext.saveGraphicsState()
+        guard let ctx = NSGraphicsContext(bitmapImageRep: rep) else {
+            NSGraphicsContext.restoreGraphicsState()
+            return baseImage
+        }
+        NSGraphicsContext.current = ctx
 
-        // Transform: scale up + flip Y (NSImage context is bottom-left; annotations are top-left)
+        // Draw base image at full pixel size (context is in pixel coordinates)
+        NSImage(cgImage: workingCGImage, size: origSize)
+            .draw(in: CGRect(x: 0, y: 0, width: pixelW, height: pixelH))
+
+        // Transform: view coords → pixel coords with Y flip (pixel context is bottom-left)
+        let viewToPixel = scaleUp * pixelScale
         let xform = NSAffineTransform()
-        xform.translateX(by: 0, yBy: origSize.height)
-        xform.scaleX(by: scaleUp, yBy: -scaleUp)
+        xform.translateX(by: 0, yBy: CGFloat(pixelH))
+        xform.scaleX(by: viewToPixel, yBy: -viewToPixel)
         xform.concat()
 
         for ann in annotations where ann.tool != .blur {
-            var scaled = ann
-            scaled.lineWidth = ann.lineWidth   // lineWidth scales with transform
-            scaled.fontSize = ann.fontSize
-            drawAnnotationForExport(scaled)
+            drawAnnotationForExport(ann)
         }
 
-        result.unlockFocus()
+        NSGraphicsContext.restoreGraphicsState()
+
+        let result = NSImage(size: origSize)
+        result.addRepresentation(rep)
         return result
     }
 

@@ -114,14 +114,11 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
     private func saveAndCopyImage(_ image: CGImage, prefix: String, region: CGRect? = nil) async {
         let url = generateFileURL(prefix: prefix, ext: "png")
+        let scale = NSScreen.main?.backingScaleFactor ?? 1.0
 
-        if let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) {
-            CGImageDestinationAddImage(dest, image, nil)
-            CGImageDestinationFinalize(dest)
-        }
+        savePNG(image, to: url, scale: scale)
 
         // 논리 크기(포인트)로 설정 — 항상 실제 CGImage 픽셀 크기에서 계산
-        let scale = NSScreen.main?.backingScaleFactor ?? 1.0
         let logicalSize = NSSize(
             width: CGFloat(image.width) / scale,
             height: CGFloat(image.height) / scale
@@ -141,13 +138,35 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         }
 
         editorWindow.open(image: nsImage) { [weak self] edited in
-            if let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil),
-               let cgEdited = edited.cgImage(forProposedRect: nil, context: nil, hints: nil) {
-                CGImageDestinationAddImage(dest, cgEdited, nil)
-                CGImageDestinationFinalize(dest)
+            // NSBitmapImageRep에서 직접 CGImage를 추출해 full-pixel 해상도로 저장
+            let cgEdited: CGImage?
+            if let rep = edited.bestRepresentation(for: .infinite, context: nil, hints: nil) as? NSBitmapImageRep {
+                cgEdited = rep.cgImage
+            } else {
+                cgEdited = edited.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            }
+            if let cg = cgEdited {
+                self?.savePNG(cg, to: url, scale: scale)
             }
             self?.showNotification(title: NSLocalizedString("notification.saved", comment: ""), body: url.lastPathComponent)
         }
+    }
+
+    /// PNG로 저장하면서 DPI 메타데이터를 포함시켜 Preview 등에서 올바른 논리 크기로 표시
+    private func savePNG(_ image: CGImage, to url: URL, scale: CGFloat) {
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else { return }
+        let dpi = 72.0 * scale
+        let ppm = Int(dpi * 39.3701)  // dots per metre
+        let props: [CFString: Any] = [
+            kCGImagePropertyDPIWidth:  dpi,
+            kCGImagePropertyDPIHeight: dpi,
+            kCGImagePropertyPNGDictionary: [
+                kCGImagePropertyPNGXPixelsPerMeter: ppm,
+                kCGImagePropertyPNGYPixelsPerMeter: ppm
+            ] as [CFString: Any]
+        ]
+        CGImageDestinationAddImage(dest, image, props as CFDictionary)
+        CGImageDestinationFinalize(dest)
     }
 
     // MARK: - Recording
