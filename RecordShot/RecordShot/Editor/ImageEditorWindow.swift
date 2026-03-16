@@ -11,11 +11,11 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
         let screen = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let chrome: CGFloat = 56 + 52  // toolbar + action bar
 
+        // 이미지 원본 크기로 창을 열되, 화면의 90%를 초과하면 그 크기로 제한
         let maxW = screen.width * 0.9
-        let maxH = (screen.height - chrome) * 0.9
-        let scale = min(1.0, min(maxW / image.size.width, maxH / image.size.height))
-        let contentW = max(image.size.width * scale, 520)
-        let contentH = image.size.height * scale + chrome
+        let maxH = screen.height * 0.9 - chrome
+        let contentW = max(min(image.size.width, maxW), 520)
+        let contentH = min(image.size.height, maxH) + chrome
 
         let rect = NSRect(
             x: screen.midX - contentW / 2,

@@ -17,11 +17,10 @@ struct ImageEditorView: View {
         VStack(spacing: 0) {
             toolbar
 
-            GeometryReader { geo in
-                let displaySize = fittedSize(in: geo.size)
+            ScrollView([.horizontal, .vertical]) {
                 AnnotationCanvasView(
                     baseImage: baseImage,
-                    displaySize: displaySize,
+                    displaySize: baseImage.size,
                     currentTool: currentTool,
                     currentColor: NSColor(selectedColor),
                     lineWidth: lineWidth,
@@ -30,22 +29,13 @@ struct ImageEditorView: View {
                         DispatchQueue.main.async { canvasView = view }
                     }
                 )
-                .frame(width: displaySize.width, height: displaySize.height)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(width: baseImage.size.width, height: baseImage.size.height)
                 .cursor(for: currentTool)
             }
             .background(Color(NSColor.underPageBackgroundColor))
 
             actionBar
         }
-    }
-
-    // 사용 가능한 영역에 맞게 이미지 비율 유지하며 꽉 채움
-    private func fittedSize(in available: CGSize) -> CGSize {
-        let scale = min(available.width / baseImage.size.width,
-                        available.height / baseImage.size.height)
-        return CGSize(width: baseImage.size.width * scale,
-                      height: baseImage.size.height * scale)
     }
 
     // MARK: - Toolbar
