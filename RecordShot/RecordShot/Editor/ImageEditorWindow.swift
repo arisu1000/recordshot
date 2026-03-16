@@ -30,7 +30,7 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        w.title = "이미지 편집"
+        w.title = NSLocalizedString("editor.title", comment: "")
         w.minSize = NSSize(width: 400, height: 300)
         w.delegate = self
 

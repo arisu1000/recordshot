@@ -1,0 +1,75 @@
+/* Annotation Tools */
+"tool.rectangle" = "Rectangle";
+"tool.circle" = "Circle";
+"tool.arrow" = "Arrow";
+"tool.text" = "Text";
+"tool.blur" = "Blur";
+
+/* Editor */
+"editor.title" = "Image Editor";
+"editor.undo" = "Undo";
+"editor.cancel" = "Cancel";
+"editor.copyToClipboard" = "Copy to Clipboard";
+"editor.done" = "Done";
+"editor.blurLabel" = "BLUR";
+"editor.textPlaceholder" = "Type text, press Enter";
+
+/* Default annotation text */
+"annotation.defaultText" = "Text";
+
+/* Menu Bar */
+"menu.screenshot" = "Screenshot";
+"menu.regionScreenshot" = "Region Screenshot";
+"menu.stopRecording" = "Stop Recording";
+"menu.startRecording" = "Start Recording";
+"menu.recordScreen" = "Record Screen";
+"menu.lastCapture" = "Last Capture";
+"menu.settings" = "Settings";
+"menu.quit" = "Quit";
+"menu.quitApp" = "Quit RecordShot";
+"menu.settingsMenu" = "Settings...";
+
+/* Preview Panel */
+"preview.edit" = "Edit";
+"preview.copy" = "Copy";
+
+/* Settings */
+"settings.title" = "RecordShot Settings";
+"settings.saveLocation" = "Save Location";
+"settings.choose" = "Choose...";
+"settings.autoCopy" = "Copy to Clipboard after Capture";
+"settings.recording" = "Recording";
+"settings.maxDuration" = "Max Duration";
+"settings.unlimited" = "Unlimited";
+"settings.noTimeLimit" = "No time limit";
+"settings.autoStop" = "Auto-stop after %d seconds";
+"settings.shortcuts" = "Keyboard Shortcuts";
+"settings.screenshot" = "Screenshot";
+"settings.regionScreenshot" = "Region Screenshot";
+"settings.toggleRecording" = "Toggle Recording";
+"settings.shortcutNote" = "Note: Requires Accessibility permission to use global shortcuts";
+"settings.openAccessibility" = "Open Accessibility Settings";
+"settings.about" = "About";
+"settings.version" = "Version";
+"settings.deploymentTarget" = "Deployment Target";
+"settings.selectFolder" = "Select Folder";
+
+/* Errors */
+"error.title" = "RecordShot Error";
+"error.noDisplay" = "No display found";
+"error.screenshotFailed" = "Screenshot failed: %@";
+"error.regionFailed" = "Region screenshot failed: %@";
+"error.recordingFailed" = "Recording failed to start: %@";
+
+/* Notifications */
+"notification.saved" = "Saved";
+"notification.recordingSaved" = "Recording Saved";
+
+/* Accessibility Permission */
+"accessibility.title" = "Accessibility Permission Required";
+"accessibility.message" = "RecordShot needs accessibility permission to use global keyboard shortcuts. Please grant permission in System Preferences > Privacy & Security > Accessibility.";
+"accessibility.openSettings" = "Open System Preferences";
+"accessibility.later" = "Later";
+
+/* Recording */
+"recording.shortcutLabel" = "Recording";

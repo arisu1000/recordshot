@@ -15,11 +15,11 @@ class HotKeyManager {
         if !AXIsProcessTrusted() {
             DispatchQueue.main.async {
                 let alert = NSAlert()
-                alert.messageText = "Accessibility Permission Required"
-                alert.informativeText = "RecordShot needs accessibility permission to use global keyboard shortcuts. Please grant permission in System Preferences > Privacy & Security > Accessibility."
+                alert.messageText = NSLocalizedString("accessibility.title", comment: "")
+                alert.informativeText = NSLocalizedString("accessibility.message", comment: "")
                 alert.alertStyle = .warning
-                alert.addButton(withTitle: "Open System Preferences")
-                alert.addButton(withTitle: "Later")
+                alert.addButton(withTitle: NSLocalizedString("accessibility.openSettings", comment: ""))
+                alert.addButton(withTitle: NSLocalizedString("accessibility.later", comment: ""))
 
                 if alert.runModal() == .alertFirstButtonReturn {
                     let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!

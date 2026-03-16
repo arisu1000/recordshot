@@ -6,26 +6,26 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Save Location") {
+            Section(NSLocalizedString("settings.saveLocation", comment: "")) {
                 HStack {
                     Text(settings.savePath.isEmpty ? "~/Desktop" : shortenPath(settings.savePath))
                         .lineLimit(1)
                         .truncationMode(.middle)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button("Choose...") {
+                    Button(NSLocalizedString("settings.choose", comment: "")) {
                         selectSaveFolder()
                     }
                 }
-                Toggle("Copy to Clipboard after Capture", isOn: $settings.autoCopyToClipboard)
+                Toggle(NSLocalizedString("settings.autoCopy", comment: ""), isOn: $settings.autoCopyToClipboard)
             }
 
-            Section("Recording") {
+            Section(NSLocalizedString("settings.recording", comment: "")) {
                 HStack {
-                    Text("Max Duration")
+                    Text(NSLocalizedString("settings.maxDuration", comment: ""))
                     Spacer()
                     if settings.maxRecordingDuration == 0 {
-                        Text("Unlimited")
+                        Text(NSLocalizedString("settings.unlimited", comment: ""))
                             .foregroundColor(.secondary)
                     } else {
                         Text("\(settings.maxRecordingDuration) seconds")
@@ -40,32 +40,34 @@ struct SettingsView: View {
                     in: 0...300,
                     step: 30
                 )
-                Text(settings.maxRecordingDuration == 0 ? "No time limit" : "Auto-stop after \(settings.maxRecordingDuration) seconds")
+                Text(settings.maxRecordingDuration == 0
+                    ? NSLocalizedString("settings.noTimeLimit", comment: "")
+                    : String(format: NSLocalizedString("settings.autoStop", comment: ""), settings.maxRecordingDuration))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
 
-            Section("Keyboard Shortcuts") {
-                HStack { Text("Screenshot"); Spacer(); Text("⌘⇧3").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
-                HStack { Text("Region Screenshot"); Spacer(); Text("⌘⇧4").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
-                HStack { Text("Toggle Recording"); Spacer(); Text("⌘⇧5").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
-                Text("Note: Requires Accessibility permission to use global shortcuts")
+            Section(NSLocalizedString("settings.shortcuts", comment: "")) {
+                HStack { Text(NSLocalizedString("settings.screenshot", comment: "")); Spacer(); Text("⌘⇧3").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
+                HStack { Text(NSLocalizedString("settings.regionScreenshot", comment: "")); Spacer(); Text("⌘⇧4").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
+                HStack { Text(NSLocalizedString("settings.toggleRecording", comment: "")); Spacer(); Text("⌘⇧5").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
+                Text(NSLocalizedString("settings.shortcutNote", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                Button("Open Accessibility Settings") {
+                Button(NSLocalizedString("settings.openAccessibility", comment: "")) {
                     let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
                     NSWorkspace.shared.open(url)
                 }
             }
 
-            Section("About") {
-                HStack { Text("Version"); Spacer(); Text("1.0.0").foregroundColor(.secondary) }
-                HStack { Text("Deployment Target"); Spacer(); Text("macOS 12.3+").foregroundColor(.secondary) }
+            Section(NSLocalizedString("settings.about", comment: "")) {
+                HStack { Text(NSLocalizedString("settings.version", comment: "")); Spacer(); Text("1.0.0").foregroundColor(.secondary) }
+                HStack { Text(NSLocalizedString("settings.deploymentTarget", comment: "")); Spacer(); Text("macOS 12.3+").foregroundColor(.secondary) }
             }
         }
         .frame(width: 450, height: 500)
-        .navigationTitle("RecordShot Settings")
+        .navigationTitle(NSLocalizedString("settings.title", comment: ""))
     }
 
     private func selectSaveFolder() {
@@ -73,7 +75,7 @@ struct SettingsView: View {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "Select Folder"
+        panel.prompt = NSLocalizedString("settings.selectFolder", comment: "")
 
         if panel.runModal() == .OK, let url = panel.url {
             settings.savePath = url.path

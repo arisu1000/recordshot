@@ -104,7 +104,7 @@ struct ImageEditorView: View {
             Button {
                 canvasView?.undoLast()
             } label: {
-                Label("되돌리기", systemImage: "arrow.uturn.backward")
+                Label(NSLocalizedString("editor.undo", comment: ""), systemImage: "arrow.uturn.backward")
                     .font(.caption)
             }
             .buttonStyle(.bordered)
@@ -122,7 +122,7 @@ struct ImageEditorView: View {
         VStack(spacing: 0) {
             Divider()
             HStack {
-                Button("취소") {
+                Button(NSLocalizedString("editor.cancel", comment: "")) {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
@@ -137,7 +137,7 @@ struct ImageEditorView: View {
                         onComplete(result)
                     }
                 } label: {
-                    Label("클립보드에 복사", systemImage: "doc.on.clipboard")
+                    Label(NSLocalizedString("editor.copyToClipboard", comment: ""), systemImage: "doc.on.clipboard")
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
@@ -149,7 +149,7 @@ struct ImageEditorView: View {
                         onComplete(result)
                     }
                 } label: {
-                    Label("완료", systemImage: "checkmark")
+                    Label(NSLocalizedString("editor.done", comment: ""), systemImage: "checkmark")
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.regular)

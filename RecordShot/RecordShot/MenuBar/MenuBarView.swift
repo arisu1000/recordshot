@@ -31,7 +31,7 @@ struct MenuBarView: View {
                 HStack(spacing: 8) {
                     ActionButton(
                         icon: "camera",
-                        title: "Screenshot",
+                        title: NSLocalizedString("menu.screenshot", comment: ""),
                         subtitle: "⌘⇧3"
                     ) {
                         closePopover()
@@ -40,7 +40,7 @@ struct MenuBarView: View {
 
                     ActionButton(
                         icon: "crop",
-                        title: "Region",
+                        title: NSLocalizedString("menu.regionScreenshot", comment: ""),
                         subtitle: "⌘⇧4"
                     ) {
                         closePopover()
@@ -56,7 +56,7 @@ struct MenuBarView: View {
                         HStack {
                             Image(systemName: "stop.circle.fill")
                                 .foregroundColor(.red)
-                            Text("Stop Recording")
+                            Text(NSLocalizedString("menu.stopRecording", comment: ""))
                                 .fontWeight(.medium)
                             Spacer()
                             Text(captureManager.recordingTimeString)
@@ -72,7 +72,7 @@ struct MenuBarView: View {
                 } else {
                     ActionButton(
                         icon: "record.circle",
-                        title: "Record Screen",
+                        title: NSLocalizedString("menu.recordScreen", comment: ""),
                         subtitle: "⌘⇧5",
                         fullWidth: true
                     ) {
@@ -88,7 +88,7 @@ struct MenuBarView: View {
             // Last capture thumbnail
             if let thumbnail = captureManager.lastCaptureThumbnail {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Last Capture")
+                    Text(NSLocalizedString("menu.lastCapture", comment: ""))
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 12)
@@ -112,7 +112,7 @@ struct MenuBarView: View {
                     NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
                     NSApp.activate(ignoringOtherApps: true)
                 }) {
-                    Label("Settings", systemImage: "gear")
+                    Label(NSLocalizedString("menu.settings", comment: ""), systemImage: "gear")
                         .font(.caption)
                 }
                 .buttonStyle(.plain)
@@ -123,7 +123,7 @@ struct MenuBarView: View {
                 Button(action: {
                     NSApp.terminate(nil)
                 }) {
-                    Label("Quit", systemImage: "power")
+                    Label(NSLocalizedString("menu.quit", comment: ""), systemImage: "power")
                         .font(.caption)
                 }
                 .buttonStyle(.plain)

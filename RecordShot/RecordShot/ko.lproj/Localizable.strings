@@ -1,0 +1,75 @@
+/* Annotation Tools */
+"tool.rectangle" = "사각형";
+"tool.circle" = "원";
+"tool.arrow" = "화살표";
+"tool.text" = "텍스트";
+"tool.blur" = "블러";
+
+/* Editor */
+"editor.title" = "이미지 편집";
+"editor.undo" = "되돌리기";
+"editor.cancel" = "취소";
+"editor.copyToClipboard" = "클립보드에 복사";
+"editor.done" = "완료";
+"editor.blurLabel" = "블러";
+"editor.textPlaceholder" = "텍스트 입력 후 Enter";
+
+/* Default annotation text */
+"annotation.defaultText" = "텍스트";
+
+/* Menu Bar */
+"menu.screenshot" = "스크린샷";
+"menu.regionScreenshot" = "영역 스크린샷";
+"menu.stopRecording" = "녹화 중지";
+"menu.startRecording" = "녹화 시작";
+"menu.recordScreen" = "화면 녹화";
+"menu.lastCapture" = "마지막 캡처";
+"menu.settings" = "설정";
+"menu.quit" = "종료";
+"menu.quitApp" = "RecordShot 종료";
+"menu.settingsMenu" = "설정...";
+
+/* Preview Panel */
+"preview.edit" = "편집";
+"preview.copy" = "복사";
+
+/* Settings */
+"settings.title" = "RecordShot 설정";
+"settings.saveLocation" = "저장 위치";
+"settings.choose" = "선택...";
+"settings.autoCopy" = "캡처 후 클립보드에 자동 복사";
+"settings.recording" = "녹화";
+"settings.maxDuration" = "최대 녹화 시간";
+"settings.unlimited" = "무제한";
+"settings.noTimeLimit" = "시간 제한 없음";
+"settings.autoStop" = "%d초 후 자동 중지";
+"settings.shortcuts" = "키보드 단축키";
+"settings.screenshot" = "스크린샷";
+"settings.regionScreenshot" = "영역 스크린샷";
+"settings.toggleRecording" = "녹화 전환";
+"settings.shortcutNote" = "참고: 글로벌 단축키를 사용하려면 손쉬운 사용 권한이 필요합니다";
+"settings.openAccessibility" = "손쉬운 사용 설정 열기";
+"settings.about" = "정보";
+"settings.version" = "버전";
+"settings.deploymentTarget" = "배포 대상";
+"settings.selectFolder" = "폴더 선택";
+
+/* Errors */
+"error.title" = "RecordShot 오류";
+"error.noDisplay" = "디스플레이를 찾을 수 없습니다";
+"error.screenshotFailed" = "스크린샷 실패: %@";
+"error.regionFailed" = "영역 스크린샷 실패: %@";
+"error.recordingFailed" = "녹화 시작 실패: %@";
+
+/* Notifications */
+"notification.saved" = "저장됨";
+"notification.recordingSaved" = "녹화 저장됨";
+
+/* Accessibility Permission */
+"accessibility.title" = "손쉬운 사용 권한 필요";
+"accessibility.message" = "RecordShot에서 글로벌 키보드 단축키를 사용하려면 손쉬운 사용 권한이 필요합니다. 시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 권한을 부여해 주세요.";
+"accessibility.openSettings" = "시스템 설정 열기";
+"accessibility.later" = "나중에";
+
+/* Recording */
+"recording.shortcutLabel" = "녹화";

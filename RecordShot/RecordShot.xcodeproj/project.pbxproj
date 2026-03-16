@@ -23,11 +23,22 @@
 		A014 /* AnnotationCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* AnnotationCanvasView.swift */; };
 		A015 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F017 /* ImageEditorView.swift */; };
 		A016 /* ImageEditorWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F018 /* ImageEditorWindow.swift */; };
+		LB001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = LV001 /* Localizable.strings */; };
 		TB001 /* AnnotationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF001 /* AnnotationModelTests.swift */; };
 		TB002 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF002 /* AppSettingsTests.swift */; };
 		TB003 /* ImageProcessingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TF003 /* ImageProcessingTests.swift */; };
 		TB004 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = TFWK /* XCTest.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		TPROXY /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PROJECT /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TARGET;
+			remoteInfo = RecordShot;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		F001 /* RecordShotApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordShotApp.swift; sourceTree = "<group>"; };
@@ -48,6 +59,8 @@
 		F016 /* AnnotationCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationCanvasView.swift; sourceTree = "<group>"; };
 		F017 /* ImageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorView.swift; sourceTree = "<group>"; };
 		F018 /* ImageEditorWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorWindow.swift; sourceTree = "<group>"; };
+		LF001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		LF002 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		PROD /* RecordShot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecordShot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		TF001 /* AnnotationModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModelTests.swift; sourceTree = "<group>"; };
 		TF002 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
@@ -55,16 +68,6 @@
 		TFWK /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		TPROD /* RecordShotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecordShotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXContainerItemProxy section */
-		TPROXY /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = PROJECT /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = TARGET;
-			remoteInfo = RecordShot;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		FWKBUILDPHASE /* Frameworks */ = {
@@ -74,7 +77,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		TFWKPHASE /* Frameworks (Tests) */ = {
+		TFWKPHASE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -103,6 +106,17 @@
 				F014 /* CapturePreviewPanel.swift */,
 			);
 			path = Capture;
+			sourceTree = "<group>";
+		};
+		EDITORGROUP /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				F015 /* AnnotationModel.swift */,
+				F016 /* AnnotationCanvasView.swift */,
+				F017 /* ImageEditorView.swift */,
+				F018 /* ImageEditorWindow.swift */,
+			);
+			path = Editor;
 			sourceTree = "<group>";
 		};
 		HOTGROUP /* HotKeys */ = {
@@ -140,16 +154,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		TESTGROUP /* RecordShotTests */ = {
-			isa = PBXGroup;
-			children = (
-				TF001 /* AnnotationModelTests.swift */,
-				TF002 /* AppSettingsTests.swift */,
-				TF003 /* ImageProcessingTests.swift */,
-			);
-			path = RecordShotTests;
-			sourceTree = "<group>";
-		};
 		SETGROUP /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -169,10 +173,21 @@
 				SETGROUP /* Settings */,
 				UTILGROUP /* Utilities */,
 				EDITORGROUP /* Editor */,
+				LV001 /* Localizable.strings */,
 				F012 /* Info.plist */,
 				F013 /* RecordShot.entitlements */,
 			);
 			path = RecordShot;
+			sourceTree = "<group>";
+		};
+		TESTGROUP /* RecordShotTests */ = {
+			isa = PBXGroup;
+			children = (
+				TF001 /* AnnotationModelTests.swift */,
+				TF002 /* AppSettingsTests.swift */,
+				TF003 /* ImageProcessingTests.swift */,
+			);
+			path = RecordShotTests;
 			sourceTree = "<group>";
 		};
 		UTILGROUP /* Utilities */ = {
@@ -181,17 +196,6 @@
 				F011 /* ClipboardManager.swift */,
 			);
 			path = Utilities;
-			sourceTree = "<group>";
-		};
-		EDITORGROUP /* Editor */ = {
-			isa = PBXGroup;
-			children = (
-				F015 /* AnnotationModel.swift */,
-				F016 /* AnnotationCanvasView.swift */,
-				F017 /* ImageEditorView.swift */,
-				F018 /* ImageEditorWindow.swift */,
-			);
-			path = Editor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -233,14 +237,6 @@
 		};
 /* End PBXNativeTarget section */
 
-/* Begin PBXTargetDependency section */
-		TDEP /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = TARGET /* RecordShot */;
-			targetProxy = TPROXY /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXProject section */
 		PROJECT /* Project object */ = {
 			isa = PBXProject;
@@ -265,6 +261,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ko,
 			);
 			mainGroup = MAINGROUP;
 			productRefGroup = PRODGROUP /* Products */;
@@ -277,24 +274,12 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXSourcesBuildPhase section */
-		TSRCPHASE /* Sources (Tests) */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				TB001 /* AnnotationModelTests.swift in Sources */,
-				TB002 /* AppSettingsTests.swift in Sources */,
-				TB003 /* ImageProcessingTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXSourcesBuildPhase section */
-
 /* Begin PBXResourcesBuildPhase section */
 		RESBUILDPHASE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				LB001 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,7 +309,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		TSRCPHASE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TB001 /* AnnotationModelTests.swift in Sources */,
+				TB002 /* AppSettingsTests.swift in Sources */,
+				TB003 /* ImageProcessingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		TDEP /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TARGET /* RecordShot */;
+			targetProxy = TPROXY /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		LV001 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				LF001 /* en */,
+				LF002 /* ko */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		PROJDEBUG /* Debug */ = {
@@ -496,7 +511,7 @@
 			};
 			name = Release;
 		};
-		TTARGDEBUG /* Debug (Tests) */ = {
+		TTARGDEBUG /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -515,7 +530,7 @@
 			};
 			name = Debug;
 		};
-		TTARGRELEASE /* Release (Tests) */ = {
+		TTARGRELEASE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";

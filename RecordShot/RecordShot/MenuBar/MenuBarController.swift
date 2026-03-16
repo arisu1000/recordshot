@@ -93,20 +93,20 @@ class MenuBarController: NSObject {
     private func showContextMenu() {
         let menu = NSMenu()
 
-        menu.addItem(NSMenuItem(title: "Screenshot", action: #selector(takeScreenshot), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Region Screenshot", action: #selector(takeRegionScreenshot), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("menu.screenshot", comment: ""), action: #selector(takeScreenshot), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("menu.regionScreenshot", comment: ""), action: #selector(takeRegionScreenshot), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
 
         if captureManager.isRecording {
-            menu.addItem(NSMenuItem(title: "Stop Recording", action: #selector(stopRecording), keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: NSLocalizedString("menu.stopRecording", comment: ""), action: #selector(stopRecording), keyEquivalent: ""))
         } else {
-            menu.addItem(NSMenuItem(title: "Start Recording", action: #selector(startRecording), keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: NSLocalizedString("menu.startRecording", comment: ""), action: #selector(startRecording), keyEquivalent: ""))
         }
 
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("menu.settingsMenu", comment: ""), action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit RecordShot", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("menu.quitApp", comment: ""), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         menu.items.forEach { $0.target = self }
 

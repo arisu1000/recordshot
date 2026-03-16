@@ -83,7 +83,7 @@ class AnnotationCanvasNSView: NSView {
                 .font: NSFont.systemFont(ofSize: 12),
                 .foregroundColor: NSColor.white
             ]
-            let label = NSAttributedString(string: "BLUR", attributes: attrs)
+            let label = NSAttributedString(string: NSLocalizedString("editor.blurLabel", comment: ""), attributes: attrs)
             let sz = label.size()
             label.draw(at: NSPoint(x: ann.rect.midX - sz.width / 2, y: ann.rect.midY - sz.height / 2))
         }
@@ -181,7 +181,7 @@ class AnnotationCanvasNSView: NSView {
         tf.backgroundColor = NSColor.white.withAlphaComponent(0.15)
         tf.textColor = ann.color
         tf.font = NSFont.systemFont(ofSize: ann.fontSize, weight: .bold)
-        tf.placeholderString = "텍스트 입력 후 Enter"
+        tf.placeholderString = NSLocalizedString("editor.textPlaceholder", comment: "")
         tf.focusRingType = .none
         tf.target = self
         tf.action = #selector(textFieldAction(_:))

@@ -28,7 +28,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         do {
             let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
             guard let display = content.displays.first else {
-                showError("No display found")
+                showError(NSLocalizedString("error.noDisplay", comment: ""))
                 return
             }
 
@@ -42,7 +42,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             let image = try await captureImage(filter: filter, config: config)
             await saveAndCopyImage(image, prefix: "screenshot")
         } catch {
-            showError("Screenshot failed: \(error.localizedDescription)")
+            showError(String(format: NSLocalizedString("error.screenshotFailed", comment: ""), error.localizedDescription))
         }
     }
 
@@ -52,7 +52,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         do {
             let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
             guard let display = content.displays.first else {
-                showError("No display found")
+                showError(NSLocalizedString("error.noDisplay", comment: ""))
                 return
             }
 
@@ -69,7 +69,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             let image = try await captureImage(filter: filter, config: config)
             await saveAndCopyImage(image, prefix: "region", region: region)
         } catch {
-            showError("Region screenshot failed: \(error.localizedDescription)")
+            showError(String(format: NSLocalizedString("error.regionFailed", comment: ""), error.localizedDescription))
         }
     }
 
@@ -144,7 +144,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
                 CGImageDestinationAddImage(dest, cgEdited, nil)
                 CGImageDestinationFinalize(dest)
             }
-            self?.showNotification(title: "저장됨", body: url.lastPathComponent)
+            self?.showNotification(title: NSLocalizedString("notification.saved", comment: ""), body: url.lastPathComponent)
         }
     }
 
@@ -156,7 +156,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         do {
             let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
             guard let display = content.displays.first else {
-                showError("No display found")
+                showError(NSLocalizedString("error.noDisplay", comment: ""))
                 return
             }
 
@@ -191,7 +191,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
                 }
             }
         } catch {
-            showError("Recording failed to start: \(error.localizedDescription)")
+            showError(String(format: NSLocalizedString("error.recordingFailed", comment: ""), error.localizedDescription))
         }
     }
 
@@ -208,7 +208,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
         await session.stopWriting()
 
-        showNotification(title: "Recording Saved", body: session.outputURL.lastPathComponent)
+        showNotification(title: NSLocalizedString("notification.recordingSaved", comment: ""), body: session.outputURL.lastPathComponent)
         recordingSession = nil
     }
 
@@ -251,7 +251,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     private func showError(_ message: String) {
         DispatchQueue.main.async {
             let alert = NSAlert()
-            alert.messageText = "RecordShot Error"
+            alert.messageText = NSLocalizedString("error.title", comment: "")
             alert.informativeText = message
             alert.alertStyle = .warning
             alert.runModal()

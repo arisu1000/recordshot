@@ -142,14 +142,14 @@ private struct CapturePreviewView: View {
                 Spacer()
 
                 Button(action: onEdit) {
-                    Label("편집", systemImage: "pencil")
+                    Label(NSLocalizedString("preview.edit", comment: ""), systemImage: "pencil")
                         .font(.caption)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
                 Button(action: onCopy) {
-                    Label("복사", systemImage: "doc.on.clipboard")
+                    Label(NSLocalizedString("preview.copy", comment: ""), systemImage: "doc.on.clipboard")
                         .font(.caption)
                 }
                 .buttonStyle(.borderedProminent)

@@ -18,11 +18,11 @@ enum AnnotationTool: CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .rectangle: return "사각형"
-        case .circle:    return "원형"
-        case .arrow:     return "화살표"
-        case .text:      return "텍스트"
-        case .blur:      return "블러"
+        case .rectangle: return NSLocalizedString("tool.rectangle", comment: "")
+        case .circle:    return NSLocalizedString("tool.circle", comment: "")
+        case .arrow:     return NSLocalizedString("tool.arrow", comment: "")
+        case .text:      return NSLocalizedString("tool.text", comment: "")
+        case .blur:      return NSLocalizedString("tool.blur", comment: "")
         }
     }
 }
@@ -32,7 +32,7 @@ struct Annotation: Identifiable {
     var tool: AnnotationTool
     var startPoint: CGPoint = .zero
     var endPoint: CGPoint = .zero
-    var text: String = "텍스트"
+    var text: String = NSLocalizedString("annotation.defaultText", comment: "")
     var color: NSColor = .systemRed
     var lineWidth: CGFloat = 3
     var fontSize: CGFloat = 18
