@@ -58,25 +58,29 @@ class ScreenCaptureManager: NSObject, ObservableObject {
                 return
             }
 
+            // 전체 화면을 네이티브 해상도로 캡처 후 CGImage 레벨에서 크롭
+            // sourceRect 방식은 좌표계 불일치로 화질 저하가 발생하므로 이 방식 사용
             let filter = SCContentFilter(display: display, excludingWindows: [])
             let config = SCStreamConfiguration()
+            config.width = display.width
+            config.height = display.height
+            config.scalesToFit = false
 
-            // region은 포인트 좌표 — SCStreamConfiguration.sourceRect은 픽셀 좌표를 기대하므로 변환
+            let fullImage = try await captureImage(filter: filter, config: config)
+
+            // region은 포인트 좌표 → 픽셀 좌표로 변환 후 크롭
             let scale = NSScreen.main?.backingScaleFactor ?? 2.0
-            let scaleFactor = Int(scale)
             let pixelRegion = CGRect(
                 x: region.origin.x * scale,
                 y: region.origin.y * scale,
                 width: region.width * scale,
                 height: region.height * scale
             )
-            config.sourceRect = pixelRegion
-            config.width = Int(region.width) * scaleFactor
-            config.height = Int(region.height) * scaleFactor
-            config.scalesToFit = false
-
-            let image = try await captureImage(filter: filter, config: config)
-            await saveAndCopyImage(image, prefix: "region", region: region)
+            guard let croppedImage = fullImage.cropping(to: pixelRegion) else {
+                showError(NSLocalizedString("error.regionFailed", comment: ""))
+                return
+            }
+            await saveAndCopyImage(croppedImage, prefix: "region")
         } catch {
             showError(String(format: NSLocalizedString("error.regionFailed", comment: ""), error.localizedDescription))
         }
