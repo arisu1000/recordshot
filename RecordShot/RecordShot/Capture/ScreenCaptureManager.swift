@@ -137,13 +137,9 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             }
         }
 
-        editorWindow.open(image: nsImage) { [weak self] edited in
-            // 주석 없을 때 renderToFinalImage()는 baseImage(원본 NSImage)를 그대로 반환.
-            // cgImage(forProposedRect:)는 원본 CGImage와 렌더링된 CGImage 모두에서
-            // 픽셀 해상도 그대로를 반환하므로 두 경우 모두 처리 가능.
-            if let cg = edited.cgImage(forProposedRect: nil, context: nil, hints: nil) {
-                self?.savePNG(cg, to: url, scale: scale)
-            }
+        editorWindow.open(image: nsImage, originalCGImage: image) { [weak self] cgResult in
+            // CGImage가 파이프라인 전체에서 직접 전달되므로 NSImage 변환 없이 원본 해상도 보존
+            self?.savePNG(cgResult, to: url, scale: scale)
             self?.showNotification(title: NSLocalizedString("notification.saved", comment: ""), body: url.lastPathComponent)
         }
     }

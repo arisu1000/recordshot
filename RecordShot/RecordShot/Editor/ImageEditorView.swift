@@ -3,7 +3,8 @@ import AppKit
 
 struct ImageEditorView: View {
     let baseImage: NSImage
-    let onComplete: (NSImage) -> Void
+    let baseCGImage: CGImage
+    let onComplete: (CGImage) -> Void
     let onCancel: () -> Void
 
     @State private var currentTool: AnnotationTool = .rectangle
@@ -19,6 +20,7 @@ struct ImageEditorView: View {
 
             AnnotationCanvasView(
                 baseImage: baseImage,
+                baseCGImage: baseCGImage,
                 currentTool: currentTool,
                 currentColor: NSColor(selectedColor),
                 lineWidth: lineWidth,
@@ -130,11 +132,15 @@ struct ImageEditorView: View {
                 Spacer()
 
                 Button {
-                    guard let edited = canvasView?.renderToFinalImage() else { return }
-                    let result = edited
+                    guard let cgResult = canvasView?.renderToFinalCGImage() else { return }
                     DispatchQueue.main.async {
-                        ClipboardManager.copyImage(result)
-                        onComplete(result)
+                        let scale = NSScreen.main?.backingScaleFactor ?? 1.0
+                        let logicalSize = NSSize(
+                            width: CGFloat(cgResult.width) / scale,
+                            height: CGFloat(cgResult.height) / scale
+                        )
+                        ClipboardManager.copyImage(NSImage(cgImage: cgResult, size: logicalSize))
+                        onComplete(cgResult)
                     }
                 } label: {
                     Label(NSLocalizedString("editor.copyToClipboard", comment: ""), systemImage: "doc.on.clipboard")
@@ -143,10 +149,9 @@ struct ImageEditorView: View {
                 .controlSize(.regular)
 
                 Button {
-                    guard let edited = canvasView?.renderToFinalImage() else { return }
-                    let result = edited
+                    guard let cgResult = canvasView?.renderToFinalCGImage() else { return }
                     DispatchQueue.main.async {
-                        onComplete(result)
+                        onComplete(cgResult)
                     }
                 } label: {
                     Label(NSLocalizedString("editor.done", comment: ""), systemImage: "checkmark")

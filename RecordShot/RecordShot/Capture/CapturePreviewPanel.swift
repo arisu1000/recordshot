@@ -33,8 +33,11 @@ class CapturePreviewPanel {
                 },
                 onEdit: { [weak self] in
                     guard let self = self else { return }
-                    self.editorWindow.open(image: image) { edited in
-                        ClipboardManager.copyImage(edited)
+                    guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
+                    self.editorWindow.open(image: image, originalCGImage: cgImage) { cgResult in
+                        let scale = NSScreen.main?.backingScaleFactor ?? 1.0
+                        let sz = NSSize(width: CGFloat(cgResult.width) / scale, height: CGFloat(cgResult.height) / scale)
+                        ClipboardManager.copyImage(NSImage(cgImage: cgResult, size: sz))
                     }
                 },
                 onDismiss: { [weak self] in

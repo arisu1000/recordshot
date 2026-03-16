@@ -5,6 +5,8 @@ import CoreImage
 
 class AnnotationCanvasNSView: NSView {
     var baseImage: NSImage? { didSet { invalidateIntrinsicContentSize() } }
+    /// 원본 캡처 CGImage — NSImage 변환 없이 full-pixel 해상도를 보존
+    var baseCGImage: CGImage?
     var annotations: [Annotation] = []
     var currentAnnotation: Annotation?
 
@@ -236,22 +238,20 @@ class AnnotationCanvasNSView: NSView {
 
     // MARK: - Export
 
-    func renderToFinalImage() -> NSImage {
-        guard let baseImage = baseImage else { return NSImage() }
+    func renderToFinalCGImage() -> CGImage? {
+        guard let baseImage = baseImage else { return nil }
 
         // Commit any in-flight annotation
         if let tf = activeTextField { commitTextField(tf) }
 
-        // No annotations → return original image untouched (zero quality loss)
-        if annotations.isEmpty { return baseImage }
+        // No annotations → return original CGImage untouched (zero quality loss)
+        if annotations.isEmpty { return baseCGImage }
 
         let origSize = baseImage.size           // logical size (points)
         let scaleUp = origSize.width / bounds.width  // view → logical
 
-        // Get the base CGImage to work in full pixel resolution
-        guard let cgBase = baseImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-            return baseImage
-        }
+        // Use the stored original CGImage at full pixel resolution
+        guard let cgBase = baseCGImage else { return nil }
         let pixelW = cgBase.width
         let pixelH = cgBase.height
         let pixelScale = CGFloat(pixelW) / origSize.width   // points → pixels
@@ -299,7 +299,7 @@ class AnnotationCanvasNSView: NSView {
             bitsPerComponent: 8, bytesPerRow: 0,
             space: colorSpace,
             bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
-        ) else { return baseImage }
+        ) else { return baseCGImage }
 
         cgCtx.scaleBy(x: pixelScale, y: pixelScale)  // pixel → point coordinate space
 
@@ -323,8 +323,7 @@ class AnnotationCanvasNSView: NSView {
 
         NSGraphicsContext.restoreGraphicsState()
 
-        guard let resultCG = cgCtx.makeImage() else { return baseImage }
-        return NSImage(cgImage: resultCG, size: origSize)
+        return cgCtx.makeImage()
     }
 
     private func drawAnnotationForExport(_ ann: Annotation) {
@@ -363,6 +362,7 @@ import SwiftUI
 
 struct AnnotationCanvasView: NSViewRepresentable {
     let baseImage: NSImage
+    let baseCGImage: CGImage
     let currentTool: AnnotationTool
     let currentColor: NSColor
     let lineWidth: CGFloat
@@ -372,6 +372,7 @@ struct AnnotationCanvasView: NSViewRepresentable {
     func makeNSView(context: Context) -> NSScrollView {
         let canvasView = AnnotationCanvasNSView()
         canvasView.baseImage = baseImage
+        canvasView.baseCGImage = baseCGImage
         canvasView.displayScale = 1.0
         canvasView.autoresizingMask = []  // 스크롤뷰에 의한 리사이즈 방지
         canvasView.frame = NSRect(origin: .zero, size: baseImage.size)

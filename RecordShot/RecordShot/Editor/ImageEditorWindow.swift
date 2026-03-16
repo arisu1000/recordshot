@@ -7,7 +7,7 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
 
     var onDismiss: (() -> Void)?
 
-    func open(image: NSImage, onComplete: @escaping (NSImage) -> Void) {
+    func open(image: NSImage, originalCGImage: CGImage, onComplete: @escaping (CGImage) -> Void) {
         let screen = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let chrome: CGFloat = 56 + 52  // toolbar + action bar
 
@@ -37,8 +37,9 @@ class ImageEditorWindow: NSObject, NSWindowDelegate {
         w.contentView = NSHostingView(
             rootView: ImageEditorView(
                 baseImage: image,
-                onComplete: { [weak self] edited in
-                    onComplete(edited)
+                baseCGImage: originalCGImage,
+                onComplete: { [weak self] cgResult in
+                    onComplete(cgResult)
                     DispatchQueue.main.async { self?.close() }
                 },
                 onCancel: { [weak self] in
