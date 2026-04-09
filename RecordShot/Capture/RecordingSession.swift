@@ -40,12 +40,21 @@ class RecordingSession: NSObject, SCStreamOutput {
 
     private var assetWriter: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
-    private var isWriting = false
-    private var firstSampleTime: CMTime?
 
-    // GIF buffering — stream is already at half resolution (set by ScreenCaptureManager)
+    // `isWriting` is read from the stream callback queue and written from @MainActor — protect with a lock
+    private let lock = NSLock()
+    private var _isWriting = false
+    private var isWriting: Bool {
+        get { lock.withLock { _isWriting } }
+        set { lock.withLock { _isWriting = newValue } }
+    }
+
+    // Accessed only from the serial stream callback queue — no additional synchronisation needed
+    private var firstSampleTime: CMTime?
     private var gifFrames: [(image: CGImage, delay: Double)] = []
     private var lastGifFrameTime: CMTime?
+    private var didReachGIFLimit = false
+
     private let gifFrameInterval: Double = 0.1   // 10 fps
     private let gifMaxFrames = 150               // 15 seconds max
     private let ciContext = CIContext()
@@ -108,6 +117,9 @@ class RecordingSession: NSObject, SCStreamOutput {
                 continuation.resume()
             }
         }
+        if let error = assetWriter?.error {
+            print("[RecordShot] AVAssetWriter error: \(error)")
+        }
     }
 
     // MARK: - GIF export
@@ -166,7 +178,14 @@ class RecordingSession: NSObject, SCStreamOutput {
     }
 
     private func handleGIFFrame(_ sampleBuffer: CMSampleBuffer) {
-        guard gifFrames.count < gifMaxFrames else { return }
+        // Auto-stop when the frame limit is reached so the user gets an explicit signal
+        if gifFrames.count >= gifMaxFrames {
+            if !didReachGIFLimit {
+                didReachGIFLimit = true
+                Task { @MainActor in await ScreenCaptureManager.shared.stopRecording() }
+            }
+            return
+        }
 
         let presentationTime = sampleBuffer.presentationTimeStamp
 

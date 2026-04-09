@@ -3,6 +3,7 @@ import ScreenCaptureKit
 import AppKit
 import AVFoundation
 import UserNotifications
+import UniformTypeIdentifiers
 
 @MainActor
 class ScreenCaptureManager: NSObject, ObservableObject {
@@ -14,11 +15,13 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     @Published var lastRecordingURL: URL?
 
     private var recordingSession: RecordingSession?
+    private var activeStream: SCStream?
     private var recordingTimer: Timer?
     private var recordingStartTime: Date?
     private let settings = AppSettings.shared
     private var editorWindows: [ImageEditorWindow] = []
     private var regionIndicator: RecordingRegionIndicator?
+    private let streamOutputQueue = DispatchQueue(label: "com.recordshot.stream", qos: .userInteractive)
 
     override init() {
         super.init()
@@ -69,7 +72,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             let fullImage = try await captureImage(filter: filter, config: config)
 
             // region은 포인트 좌표 → 픽셀 좌표로 변환 후 크롭
-            let scale = NSScreen.main?.backingScaleFactor ?? 2.0
+            let scale = NSScreen.main?.backingScaleFactor ?? 1.0
             let pixelRegion = CGRect(
                 x: region.origin.x * scale,
                 y: region.origin.y * scale,
@@ -109,7 +112,8 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             do {
                 try stream.addStreamOutput(output, type: .screen, sampleHandlerQueue: .main)
                 stream.startCapture { error in
-                    if let error = error {
+                    // Guard: SingleFrameOutput may have already resumed the continuation
+                    if let error = error, !output.didCapture {
                         continuation.resume(throwing: error)
                     }
                 }
@@ -149,15 +153,23 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         }
 
         editorWindow.open(image: nsImage, originalCGImage: image) { [weak self] cgResult in
+            guard let self else { return }
             // CGImage가 파이프라인 전체에서 직접 전달되므로 NSImage 변환 없이 원본 해상도 보존
-            self?.savePNG(cgResult, to: url, scale: scale)
-            self?.showNotification(title: NSLocalizedString("notification.saved", comment: ""), body: url.lastPathComponent)
+            self.savePNG(cgResult, to: url, scale: scale)
+            if self.settings.autoCopyToClipboard {
+                let logicalSize = NSSize(
+                    width: CGFloat(cgResult.width) / scale,
+                    height: CGFloat(cgResult.height) / scale
+                )
+                ClipboardManager.copyImage(NSImage(cgImage: cgResult, size: logicalSize))
+            }
+            self.showNotification(title: NSLocalizedString("notification.saved", comment: ""), body: url.lastPathComponent)
         }
     }
 
     /// PNG로 저장하면서 DPI 메타데이터를 포함시켜 Preview 등에서 올바른 논리 크기로 표시
     private func savePNG(_ image: CGImage, to url: URL, scale: CGFloat) {
-        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else { return }
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else { return }
         let dpi = 72.0 * scale
         let ppm = Int(dpi * 39.3701)  // dots per metre
         let props: [CFString: Any] = [
@@ -235,9 +247,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             )
 
             let stream = SCStream(filter: filter, configuration: config, delegate: self)
-            try stream.addStreamOutput(recordingSession!, type: .screen, sampleHandlerQueue: .global())
+            try stream.addStreamOutput(recordingSession!, type: .screen, sampleHandlerQueue: streamOutputQueue)
 
             try await stream.startCapture()
+            activeStream = stream          // strong reference — keeps stream alive during recording
             recordingSession?.stream = stream
             try recordingSession?.startWriting()
 
@@ -253,8 +266,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
             // Auto-stop if duration set
             if settings.maxRecordingDuration > 0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(settings.maxRecordingDuration)) { [weak self] in
-                    Task { await self?.stopRecording() }
+                let duration = settings.maxRecordingDuration
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(nanoseconds: UInt64(duration) * 1_000_000_000)
+                    await self?.stopRecording()
                 }
             }
         } catch {
@@ -271,9 +286,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         regionIndicator = nil
         NotificationCenter.default.post(name: .recordingStateChanged, object: nil)
 
-        if let stream = session.stream {
+        if let stream = activeStream {
             try? await stream.stopCapture()
         }
+        activeStream = nil
 
         await session.stopWriting()
 
@@ -286,12 +302,10 @@ class ScreenCaptureManager: NSObject, ObservableObject {
 
     private func startRecordingTimer() {
         recordingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self = self, let start = self.recordingStartTime else { return }
-            let elapsed = Int(Date().timeIntervalSince(start))
-            let minutes = elapsed / 60
-            let seconds = elapsed % 60
-            Task { @MainActor in
-                self.recordingTimeString = String(format: "%02d:%02d", minutes, seconds)
+            Task { @MainActor [weak self] in
+                guard let self, let start = self.recordingStartTime else { return }
+                let elapsed = Int(Date().timeIntervalSince(start))
+                self.recordingTimeString = String(format: "%02d:%02d", elapsed / 60, elapsed % 60)
             }
         }
     }
@@ -351,9 +365,9 @@ extension ScreenCaptureManager: SCStreamDelegate {
 }
 
 // Helper for legacy single frame capture
-class SingleFrameOutput: NSObject, SCStreamOutput {
+class SingleFrameOutput: NSObject, SCStreamOutput, @unchecked Sendable {
     private let completion: (Result<CGImage, Error>) -> Void
-    private var didCapture = false
+    private(set) var didCapture = false
 
     init(completion: @escaping (Result<CGImage, Error>) -> Void) {
         self.completion = completion

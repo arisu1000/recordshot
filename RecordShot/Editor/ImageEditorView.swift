@@ -133,15 +133,13 @@ struct ImageEditorView: View {
 
                 Button {
                     guard let cgResult = canvasView?.renderToFinalCGImage() else { return }
-                    DispatchQueue.main.async {
-                        let scale = NSScreen.main?.backingScaleFactor ?? 1.0
-                        let logicalSize = NSSize(
-                            width: CGFloat(cgResult.width) / scale,
-                            height: CGFloat(cgResult.height) / scale
-                        )
-                        ClipboardManager.copyImage(NSImage(cgImage: cgResult, size: logicalSize))
-                        onComplete(cgResult)
-                    }
+                    let scale = NSScreen.main?.backingScaleFactor ?? 1.0
+                    let logicalSize = NSSize(
+                        width: CGFloat(cgResult.width) / scale,
+                        height: CGFloat(cgResult.height) / scale
+                    )
+                    ClipboardManager.copyImage(NSImage(cgImage: cgResult, size: logicalSize))
+                    onComplete(cgResult)
                 } label: {
                     Label(NSLocalizedString("editor.copyToClipboard", comment: ""), systemImage: "doc.on.clipboard")
                 }
@@ -150,9 +148,7 @@ struct ImageEditorView: View {
 
                 Button {
                     guard let cgResult = canvasView?.renderToFinalCGImage() else { return }
-                    DispatchQueue.main.async {
-                        onComplete(cgResult)
-                    }
+                    onComplete(cgResult)
                 } label: {
                     Label(NSLocalizedString("editor.done", comment: ""), systemImage: "checkmark")
                 }

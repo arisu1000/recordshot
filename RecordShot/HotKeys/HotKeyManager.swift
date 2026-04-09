@@ -29,6 +29,10 @@ class HotKeyManager {
         }
     }
 
+    deinit {
+        stopMonitoring()
+    }
+
     func startMonitoring() {
         guard AXIsProcessTrusted() else { return }
 

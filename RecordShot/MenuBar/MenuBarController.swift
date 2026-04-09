@@ -71,9 +71,7 @@ class MenuBarController: NSObject {
 
     #if DEBUG
     @objc private func recordingStateChanged() {
-        DispatchQueue.main.async { [weak self] in
-            self?.updateStatusItemIcon(isRecording: self?.captureManager.isRecording ?? false)
-        }
+        updateStatusItemIcon(isRecording: captureManager.isRecording)
     }
     #endif
 
