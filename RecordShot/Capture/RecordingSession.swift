@@ -159,6 +159,14 @@ class RecordingSession: NSObject, SCStreamOutput {
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
         guard type == .screen, isWriting else { return }
 
+        // ScreenCaptureKit은 실제 프레임 외에 idle/blank 상태 버퍼도 전달함
+        // complete 상태가 아닌 버퍼를 AVAssetWriter에 append하면 writer가 에러 상태에 빠짐
+        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
+              let status = attachments.first?[.status] as? Int,
+              status == SCFrameStatus.complete.rawValue else {
+            return
+        }
+
         if format == .gif {
             handleGIFFrame(sampleBuffer)
             return

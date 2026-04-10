@@ -15,13 +15,11 @@ struct MenuBarView: View {
                 Text("RecordShot")
                     .font(.headline)
                 Spacer()
-                #if DEBUG
                 if captureManager.isRecording {
                     Label(captureManager.recordingTimeString, systemImage: "record.circle.fill")
                         .foregroundColor(.red)
                         .font(.caption)
                 }
-                #endif
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -51,7 +49,6 @@ struct MenuBarView: View {
                     }
                 }
 
-                #if DEBUG
                 // Format picker — only when not recording
                 if !captureManager.isRecording {
                     HStack(spacing: 6) {
@@ -110,13 +107,11 @@ struct MenuBarView: View {
                         }
                     }
                 }
-                #endif
             }
             .padding(12)
 
             Divider()
 
-            #if DEBUG
             // Last recording
             if let recordingURL = captureManager.lastRecordingURL {
                 Divider()
@@ -142,7 +137,6 @@ struct MenuBarView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
             }
-            #endif
 
             // Last capture thumbnail
             if let thumbnail = captureManager.lastCaptureThumbnail {
