@@ -38,6 +38,13 @@
 
 /* Settings */
 "settings.title" = "RecordShot Settings";
+"settings.general" = "General";
+"settings.launchAction" = "Action on Launch";
+"settings.launchAction.none" = "None";
+"settings.launchAction.fullScreenshot" = "Full Screenshot";
+"settings.launchAction.regionScreenshot" = "Region Screenshot";
+"settings.launchAction.fullRecording" = "Full Screen Recording";
+"settings.launchAction.regionRecording" = "Region Recording";
 "settings.saveLocation" = "Save Location";
 "settings.choose" = "Choose...";
 "settings.autoCopy" = "Copy to Clipboard after Capture";

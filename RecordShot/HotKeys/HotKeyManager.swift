@@ -95,7 +95,6 @@ class HotKeyManager {
             return nil
         }
 
-        #if DEBUG
         // ⌘⇧5 — Toggle recording
         if flags.intersection([.maskCommand, .maskShift, .maskAlternate, .maskControl]) == cmdShift && keyCode == 23 {
             Task { @MainActor in
@@ -119,7 +118,6 @@ class HotKeyManager {
             }
             return nil
         }
-        #endif
 
         return Unmanaged.passRetained(event)
     }

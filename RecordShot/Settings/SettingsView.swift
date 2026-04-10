@@ -6,6 +6,15 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section(NSLocalizedString("settings.general", comment: "")) {
+                Picker(NSLocalizedString("settings.launchAction", comment: ""), selection: $settings.launchAction) {
+                    ForEach(LaunchAction.allCases) { action in
+                        Text(action.displayName).tag(action.rawValue)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
             Section(NSLocalizedString("settings.saveLocation", comment: "")) {
                 HStack {
                     Text(settings.savePath.isEmpty ? "~/Desktop" : shortenPath(settings.savePath))
@@ -20,7 +29,6 @@ struct SettingsView: View {
                 Toggle(NSLocalizedString("settings.autoCopy", comment: ""), isOn: $settings.autoCopyToClipboard)
             }
 
-            #if DEBUG
             Section(NSLocalizedString("settings.recording", comment: "")) {
                 HStack {
                     Text(NSLocalizedString("settings.recordingSaveLocation", comment: ""))
@@ -73,15 +81,12 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            #endif
 
             Section(NSLocalizedString("settings.shortcuts", comment: "")) {
                 HStack { Text(NSLocalizedString("settings.screenshot", comment: "")); Spacer(); Text("⌘⇧3").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
                 HStack { Text(NSLocalizedString("settings.regionScreenshot", comment: "")); Spacer(); Text("⌘⇧4").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
-                #if DEBUG
                 HStack { Text(NSLocalizedString("settings.toggleRecording", comment: "")); Spacer(); Text("⌘⇧5").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
                 HStack { Text(NSLocalizedString("settings.regionRecord", comment: "")); Spacer(); Text("⌘⇧6").font(.system(.body, design: .monospaced)).foregroundColor(.secondary) }
-                #endif
                 Text(NSLocalizedString("settings.shortcutNote", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -97,15 +102,10 @@ struct SettingsView: View {
                 HStack { Text(NSLocalizedString("settings.deploymentTarget", comment: "")); Spacer(); Text("macOS 12.3+").foregroundColor(.secondary) }
             }
         }
-        #if DEBUG
-        .frame(width: 480, height: 560)
-        #else
-        .frame(width: 480, height: 400)
-        #endif
+        .frame(width: 480, height: 600)
         .navigationTitle(NSLocalizedString("settings.title", comment: ""))
     }
 
-    #if DEBUG
     private func selectRecordingFolder() {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
@@ -117,7 +117,6 @@ struct SettingsView: View {
             settings.recordingSavePath = url.path
         }
     }
-    #endif
 
     private func selectSaveFolder() {
         let panel = NSOpenPanel()

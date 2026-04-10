@@ -38,6 +38,13 @@
 
 /* Settings */
 "settings.title" = "RecordShot 설정";
+"settings.general" = "일반";
+"settings.launchAction" = "실행 시 동작";
+"settings.launchAction.none" = "없음";
+"settings.launchAction.fullScreenshot" = "전체 스크린샷";
+"settings.launchAction.regionScreenshot" = "영역 스크린샷";
+"settings.launchAction.fullRecording" = "전체 화면 녹화";
+"settings.launchAction.regionRecording" = "영역 녹화";
 "settings.saveLocation" = "저장 위치";
 "settings.choose" = "선택...";
 "settings.autoCopy" = "캡처 후 클립보드에 자동 복사";

@@ -12,9 +12,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menuBarController = MenuBarController()
         hotKeyManager = HotKeyManager()
 
-        // Request screen capture permission
+        // Request screen capture permission, then execute launch action
         Task {
             await requestScreenCapturePermission()
+            await executeLaunchAction()
+        }
+    }
+
+    private func executeLaunchAction() async {
+        let action = LaunchAction(rawValue: AppSettings.shared.launchAction) ?? .none
+        guard action != .none else { return }
+
+        // 앱 초기화 완료 후 약간의 지연 — UI가 준비되도록 보장
+        try? await Task.sleep(nanoseconds: 300_000_000)
+
+        let manager = ScreenCaptureManager.shared
+        switch action {
+        case .none: break
+        case .fullScreenshot: await manager.takeFullScreenshot()
+        case .regionScreenshot: await manager.takeRegionScreenshot()
+        case .fullRecording: await manager.startRecording()
+        case .regionRecording: await manager.startRegionRecording()
         }
     }
 
