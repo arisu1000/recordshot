@@ -4,6 +4,7 @@ import ScreenCaptureKit
 class AppDelegate: NSObject, NSApplicationDelegate {
     var menuBarController: MenuBarController?
     var hotKeyManager: HotKeyManager?
+    var onboardingWindow: OnboardingWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide from dock - LSUIElement handles this, but ensure it
@@ -11,6 +12,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menuBarController = MenuBarController()
         hotKeyManager = HotKeyManager()
+
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+        if !hasCompletedOnboarding {
+            onboardingWindow = OnboardingWindow()
+            onboardingWindow?.show()
+        }
 
         // Request screen capture permission, then execute launch action
         Task {

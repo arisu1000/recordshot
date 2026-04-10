@@ -39,6 +39,7 @@
 /* Settings */
 "settings.title" = "RecordShot Settings";
 "settings.general" = "General";
+"settings.launchAtLogin" = "Launch at Login";
 "settings.launchAction" = "Action on Launch";
 "settings.launchAction.none" = "None";
 "settings.launchAction.fullScreenshot" = "Full Screenshot";
@@ -78,6 +79,19 @@
 /* Notifications */
 "notification.saved" = "Saved";
 "notification.recordingSaved" = "Recording Saved";
+
+/* Onboarding */
+"onboarding.title" = "Welcome to RecordShot";
+"onboarding.welcome" = "Welcome to RecordShot";
+"onboarding.description" = "RecordShot needs a couple of permissions to capture your screen and use global shortcuts.";
+"onboarding.screenRecording" = "Screen Recording";
+"onboarding.screenRecordingDesc" = "Required for screenshots and screen recording.";
+"onboarding.openScreenRecording" = "Open Screen Recording Settings";
+"onboarding.accessibility" = "Accessibility";
+"onboarding.accessibilityDesc" = "Required for global keyboard shortcuts (⌘⇧3, ⌘⇧4, etc.).";
+"onboarding.openAccessibility" = "Open Accessibility Settings";
+"onboarding.hint" = "You can change permissions later in System Settings > Privacy & Security.";
+"onboarding.start" = "Get Started";
 
 /* Accessibility Permission */
 "accessibility.title" = "Accessibility Permission Required";

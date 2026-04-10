@@ -158,6 +158,33 @@ struct MenuBarView: View {
                 Divider()
             }
 
+            // Options
+            VStack(spacing: 6) {
+                Toggle(NSLocalizedString("settings.launchAtLogin", comment: ""), isOn: $settings.launchAtLogin)
+                    .toggleStyle(.checkbox)
+                    .font(.caption)
+
+                HStack {
+                    Text(NSLocalizedString("settings.launchAction", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Picker("", selection: $settings.launchAction) {
+                        ForEach(LaunchAction.allCases) { action in
+                            Text(action.displayName).tag(action.rawValue)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(maxWidth: 140)
+                    .controlSize(.small)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+
+            Divider()
+
             // Footer
             HStack {
                 Button(action: {

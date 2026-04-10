@@ -67,6 +67,9 @@ NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.hei
 | `CapturePreviewPanel.swift` | 현재 미사용(편집창 직행). 향후 필요시 재활성화 가능 |
 | `AppSettings.swift` | UserDefaults 설정 모델. `LaunchAction` enum으로 앱 시작 시 동작 설정 |
 | `AppDelegate.swift` | 앱 초기화, 권한 요청, `executeLaunchAction()`으로 시작 시 동작 실행 |
+| `OnboardingWindow.swift` | 첫 실행 시 권한 안내 온보딩 창. 화면 기록 + 손쉬운 사용 권한 상태 2초마다 확인 |
+| `LaunchAgentHelper.swift` | LaunchAgent plist로 로그인 시 자동 실행 관리 (ad-hoc 서명 호환) |
+| `FullScreenRecordingIndicator.swift` | 전체 화면 녹화 시 좌측 상단 "● REC" 배지 표시 |
 
 ## 편집기 좌표계
 
@@ -97,6 +100,15 @@ renderToFinalImage() 내부:
 ### 실행 시 동작 (Launch Action)
 - `AppSettings.launchAction`으로 앱 시작 시 자동 실행할 동작 설정 (없음/전체 스크린샷/영역 스크린샷/전체 녹화/영역 녹화)
 - `AppDelegate.executeLaunchAction()`에서 300ms 지연 후 실행 — UI 초기화 완료 대기
+
+### 로그인 시 자동 실행
+- `LaunchAgentHelper`로 `~/Library/LaunchAgents/com.recordshot.app.plist` 생성/삭제
+- `SMAppService`는 ad-hoc 서명에서 동작하지 않으므로 LaunchAgent plist 방식 사용 (AlwaysAwake와 동일)
+
+### 온보딩
+- `UserDefaults("hasCompletedOnboarding")`로 첫 실행 여부 판단
+- 온보딩 창에서 2초마다 권한 상태 폴링 — 사용자가 시스템 설정에서 권한 부여하면 자동으로 체크 표시
+- 테스트 시 `defaults delete com.recordshot.app hasCompletedOnboarding`으로 리셋
 
 ## 알려진 제약
 

@@ -7,6 +7,8 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section(NSLocalizedString("settings.general", comment: "")) {
+                Toggle(NSLocalizedString("settings.launchAtLogin", comment: ""), isOn: $settings.launchAtLogin)
+
                 Picker(NSLocalizedString("settings.launchAction", comment: ""), selection: $settings.launchAction) {
                     ForEach(LaunchAction.allCases) { action in
                         Text(action.displayName).tag(action.rawValue)

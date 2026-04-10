@@ -7,26 +7,7 @@ class HotKeyManager {
     private let settings = AppSettings.shared
 
     init() {
-        checkAccessibilityPermission()
         startMonitoring()
-    }
-
-    private func checkAccessibilityPermission() {
-        if !AXIsProcessTrusted() {
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = NSLocalizedString("accessibility.title", comment: "")
-                alert.informativeText = NSLocalizedString("accessibility.message", comment: "")
-                alert.alertStyle = .warning
-                alert.addButton(withTitle: NSLocalizedString("accessibility.openSettings", comment: ""))
-                alert.addButton(withTitle: NSLocalizedString("accessibility.later", comment: ""))
-
-                if alert.runModal() == .alertFirstButtonReturn {
-                    let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
-                    NSWorkspace.shared.open(url)
-                }
-            }
-        }
     }
 
     deinit {

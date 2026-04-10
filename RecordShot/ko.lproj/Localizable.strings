@@ -39,6 +39,7 @@
 /* Settings */
 "settings.title" = "RecordShot 설정";
 "settings.general" = "일반";
+"settings.launchAtLogin" = "로그인 시 자동 실행";
 "settings.launchAction" = "실행 시 동작";
 "settings.launchAction.none" = "없음";
 "settings.launchAction.fullScreenshot" = "전체 스크린샷";
@@ -78,6 +79,19 @@
 /* Notifications */
 "notification.saved" = "저장됨";
 "notification.recordingSaved" = "녹화 저장됨";
+
+/* Onboarding */
+"onboarding.title" = "RecordShot 시작하기";
+"onboarding.welcome" = "RecordShot에 오신 것을 환영합니다";
+"onboarding.description" = "스크린샷과 글로벌 단축키를 사용하려면 아래 권한이 필요합니다.";
+"onboarding.screenRecording" = "화면 기록";
+"onboarding.screenRecordingDesc" = "스크린샷 및 화면 녹화에 필요합니다.";
+"onboarding.openScreenRecording" = "화면 기록 설정 열기";
+"onboarding.accessibility" = "손쉬운 사용";
+"onboarding.accessibilityDesc" = "글로벌 키보드 단축키(⌘⇧3, ⌘⇧4 등)에 필요합니다.";
+"onboarding.openAccessibility" = "손쉬운 사용 설정 열기";
+"onboarding.hint" = "나중에 시스템 설정 > 개인정보 보호 및 보안에서 변경할 수 있습니다.";
+"onboarding.start" = "시작하기";
 
 /* Accessibility Permission */
 "accessibility.title" = "손쉬운 사용 권한 필요";

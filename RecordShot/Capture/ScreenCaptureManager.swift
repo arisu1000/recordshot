@@ -21,6 +21,7 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     private let settings = AppSettings.shared
     private var editorWindows: [ImageEditorWindow] = []
     private var regionIndicator: RecordingRegionIndicator?
+    private var fullScreenRecIndicator: FullScreenRecordingIndicator?
     private let streamOutputQueue = DispatchQueue(label: "com.recordshot.stream", qos: .userInteractive)
 
     override init() {
@@ -245,6 +246,9 @@ class ScreenCaptureManager: NSObject, ObservableObject {
             if let region = region {
                 regionIndicator = RecordingRegionIndicator()
                 regionIndicator?.show(region: region)
+            } else {
+                fullScreenRecIndicator = FullScreenRecordingIndicator()
+                fullScreenRecIndicator?.show()
             }
 
             // Auto-stop if duration set
@@ -267,6 +271,8 @@ class ScreenCaptureManager: NSObject, ObservableObject {
         stopRecordingTimer()
         regionIndicator?.hide()
         regionIndicator = nil
+        fullScreenRecIndicator?.hide()
+        fullScreenRecIndicator = nil
         NotificationCenter.default.post(name: .recordingStateChanged, object: nil)
 
         if let stream = activeStream {

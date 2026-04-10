@@ -44,9 +44,10 @@ Dock 아이콘 없이 메뉴바에서만 동작하는 가볍고 빠른 스크린
 
 ### 바이너리 (권장)
 
-1. [Releases](https://github.com/arisu1000/recordshot/releases) 페이지에서 최신 `RecordShot-x.x.dmg` 다운로드
-2. DMG를 열고 `RecordShot.app`을 `Applications` 폴더로 드래그
+1. [Releases](https://github.com/arisu1000/recordshot/releases) 페이지에서 최신 `RecordShot.zip` 다운로드
+2. 압축 해제 후 `RecordShot.app`을 `Applications` 폴더로 이동
 3. 처음 실행 시 우클릭 → **열기** (Gatekeeper 우회)
+4. 온보딩 안내에 따라 **화면 기록** 및 **손쉬운 사용** 권한 허용
 
 ### 소스에서 빌드
 
@@ -61,8 +62,9 @@ open RecordShot.app
 
 ## 사용법
 
-1. 앱 실행 → 메뉴바 우측에 **카메라 아이콘** 등장
-2. 아이콘 클릭 → 팝오버 메뉴에서 원하는 동작 선택
+1. 앱 실행 → 첫 실행 시 권한 설정 안내 창 표시
+2. 메뉴바 우측에 **카메라 아이콘** 등장
+3. 아이콘 클릭 → 팝오버 메뉴에서 원하는 동작 선택
 
 ```
 캡처 → 편집 창 자동 오픈
@@ -90,7 +92,8 @@ RecordShot/
 └── RecordShot/
     ├── App/
     │   ├── RecordShotApp.swift         # @main 진입점
-    │   └── AppDelegate.swift           # 앱 초기화, 권한 요청
+    │   ├── AppDelegate.swift           # 앱 초기화, 권한 요청
+    │   └── OnboardingWindow.swift      # 첫 실행 권한 안내 온보딩
     ├── MenuBar/
     │   ├── MenuBarController.swift     # NSStatusItem + NSPopover
     │   └── MenuBarView.swift           # 팝오버 SwiftUI 뷰
@@ -110,7 +113,8 @@ RecordShot/
     │   ├── AppSettings.swift           # UserDefaults 설정 모델
     │   └── SettingsView.swift          # 설정 SwiftUI 뷰
     ├── Utilities/
-    │   └── ClipboardManager.swift      # NSPasteboard 헬퍼
+    │   ├── ClipboardManager.swift      # NSPasteboard 헬퍼
+    │   └── LaunchAgentHelper.swift     # 로그인 시 자동 실행 관리
     └── Assets.xcassets/                # 앱 아이콘 및 리소스
 ```
 

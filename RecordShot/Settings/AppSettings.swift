@@ -48,6 +48,15 @@ class AppSettings: ObservableObject {
     @Published var launchAction: String {
         didSet { UserDefaults.standard.set(launchAction, forKey: "launchAction") }
     }
+    @Published var launchAtLogin: Bool {
+        didSet {
+            if launchAtLogin {
+                LaunchAgentHelper.enable()
+            } else {
+                LaunchAgentHelper.disable()
+            }
+        }
+    }
 
     private init() {
         let defaults = UserDefaults.standard
@@ -63,5 +72,6 @@ class AppSettings: ObservableObject {
         recordingFormat = defaults.string(forKey: "recordingFormat") ?? RecordingFormat.mp4.rawValue
         recordingSavePath = defaults.string(forKey: "recordingSavePath") ?? defaultPath
         launchAction = defaults.string(forKey: "launchAction") ?? LaunchAction.none.rawValue
+        launchAtLogin = LaunchAgentHelper.isEnabled()
     }
 }
