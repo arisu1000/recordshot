@@ -54,39 +54,22 @@ class ScreenCaptureManager: NSObject, ObservableObject {
     func takeRegionScreenshot() async {
         guard let region = await RegionSelector.selectRegion() else { return }
 
-        do {
-            let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
-            guard let display = content.displays.first else {
-                showError(NSLocalizedString("error.noDisplay", comment: ""))
-                return
-            }
+        // 오버레이 창이 닫힌 후 화면 합성기가 업데이트될 때까지 대기
+        try? await Task.sleep(nanoseconds: 150_000_000)
 
-            // 전체 화면을 네이티브 해상도로 캡처 후 CGImage 레벨에서 크롭
-            // sourceRect 방식은 좌표계 불일치로 화질 저하가 발생하므로 이 방식 사용
-            let filter = SCContentFilter(display: display, excludingWindows: [])
-            let config = SCStreamConfiguration()
-            config.width = display.width
-            config.height = display.height
-            config.scalesToFit = false
-
-            let fullImage = try await captureImage(filter: filter, config: config)
-
-            // region은 포인트 좌표 → 픽셀 좌표로 변환 후 크롭
-            let scale = NSScreen.main?.backingScaleFactor ?? 1.0
-            let pixelRegion = CGRect(
-                x: region.origin.x * scale,
-                y: region.origin.y * scale,
-                width: region.width * scale,
-                height: region.height * scale
-            )
-            guard let croppedImage = fullImage.cropping(to: pixelRegion) else {
-                showError(NSLocalizedString("error.regionFailed", comment: ""))
-                return
-            }
-            await saveAndCopyImage(croppedImage, prefix: "region")
-        } catch {
-            showError(String(format: NSLocalizedString("error.regionFailed", comment: ""), error.localizedDescription))
+        // CGWindowListCreateImage는 top-left origin 스크린 좌표(포인트)를 직접 받아
+        // 네이티브 해상도로 캡처 — 좌표 변환 불필요
+        guard let image = CGWindowListCreateImage(
+            region,
+            .optionOnScreenOnly,
+            kCGNullWindowID,
+            [.bestResolution]
+        ) else {
+            showError(NSLocalizedString("error.regionFailed", comment: ""))
+            return
         }
+
+        await saveAndCopyImage(image, prefix: "region")
     }
 
     private func captureImage(filter: SCContentFilter, config: SCStreamConfiguration) async throws -> CGImage {
