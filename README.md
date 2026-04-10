@@ -1,8 +1,8 @@
 # RecordShot
 
-> macOS 메뉴바 스크린샷 & 이미지 편집 유틸리티
+> macOS 메뉴바 스크린샷 & 화면 녹화 & 이미지 편집 유틸리티
 
-Dock 아이콘 없이 메뉴바에서만 동작하는 가볍고 빠른 스크린샷 도구입니다.
+Dock 아이콘 없이 메뉴바에서만 동작하는 가볍고 빠른 스크린샷/녹화 도구입니다.
 캡처 후 바로 주석 편집 창이 열리며, 저장 또는 클립보드 복사를 선택할 수 있습니다.
 
 ---
@@ -13,7 +13,11 @@ Dock 아이콘 없이 메뉴바에서만 동작하는 가볍고 빠른 스크린
 |------|--------|------|
 | 전체 화면 스크린샷 | `⌘⇧3` | 현재 디스플레이 전체 캡처 |
 | 영역 선택 스크린샷 | `⌘⇧4` | 드래그로 원하는 영역만 캡처 |
+| 전체 화면 녹화 | `⌘⇧5` | 화면 녹화 시작/중지 |
+| 영역 녹화 | `⌘⇧6` | 선택 영역만 녹화 |
 | 이미지 편집 | — | 캡처 직후 주석 편집 창 자동 오픈 |
+| 녹화 포맷 선택 | — | MP4 / MOV / GIF 지원 |
+| 실행 시 동작 | — | 앱 시작 시 자동 실행할 동작 설정 |
 | 글로벌 단축키 | — | 다른 앱 사용 중에도 즉시 실행 |
 | 클립보드 복사 | — | 편집 완료 후 바로 붙여넣기 가능 |
 | 한국어 / 영어 지원 | — | 시스템 언어 자동 적용 |
@@ -32,7 +36,7 @@ Dock 아이콘 없이 메뉴바에서만 동작하는 가볍고 빠른 스크린
 
 ## 요구사항
 
-- **macOS 12.3** 이상
+- **macOS 13.0 (Ventura)** 이상
 - **화면 기록 권한** — 시스템 설정 → 개인정보 보호 및 보안 → 화면 기록
 - **손쉬운 사용 권한** — 글로벌 단축키(`⌘⇧3` / `⌘⇧4`) 사용 시 필요
 
@@ -46,17 +50,14 @@ Dock 아이콘 없이 메뉴바에서만 동작하는 가볍고 빠른 스크린
 
 ### 소스에서 빌드
 
+Xcode 없이 Swift CLI Tools만으로 빌드 가능합니다 (SPM 기반).
+
 ```bash
 git clone https://github.com/arisu1000/recordshot.git
-cd recordshot/RecordShot
-xcodebuild -project RecordShot.xcodeproj -scheme RecordShot -configuration Release build
+cd recordshot
+./build_app.sh          # release 빌드
+open RecordShot.app
 ```
-
-또는 Xcode에서:
-```bash
-open RecordShot/RecordShot.xcodeproj
-```
-**Signing & Capabilities** 탭에서 Team 설정 후 `⌘R`
 
 ## 사용법
 
@@ -76,6 +77,7 @@ open RecordShot/RecordShot.xcodeproj
 | 종류 | 형식 | 기본 위치 |
 |------|------|---------|
 | 스크린샷 | PNG | `~/Desktop` |
+| 녹화 | MP4 / MOV / GIF | `~/Desktop` |
 
 설정(Settings)에서 저장 위치 변경 가능
 
@@ -83,7 +85,8 @@ open RecordShot/RecordShot.xcodeproj
 
 ```
 RecordShot/
-├── RecordShot.xcodeproj/
+├── Package.swift               # SPM 프로젝트 정의
+├── build_app.sh                # .app 번들 빌드 스크립트
 └── RecordShot/
     ├── App/
     │   ├── RecordShotApp.swift         # @main 진입점
@@ -93,7 +96,7 @@ RecordShot/
     │   └── MenuBarView.swift           # 팝오버 SwiftUI 뷰
     ├── Capture/
     │   ├── ScreenCaptureManager.swift  # 스크린샷 핵심 로직
-    │   ├── RecordingSession.swift      # 녹화 세션 (개발중)
+    │   ├── RecordingSession.swift      # 녹화 세션 (MP4/MOV/GIF)
     │   ├── RegionSelector.swift        # 영역 선택 오버레이
     │   └── RecordingRegionIndicator.swift # 녹화 영역 표시기
     ├── Editor/
@@ -118,12 +121,9 @@ RecordShot/
 - **캡처**: ScreenCaptureKit
 - **이미지 처리**: CoreImage, CoreGraphics
 - **단축키**: CGEventTap (Carbon)
-- **Deployment Target**: macOS 12.3+
+- **빌드 시스템**: Swift Package Manager (Xcode 불필요)
+- **Deployment Target**: macOS 13.0+
 - **외부 의존성**: 없음 (All Apple first-party frameworks)
-
-## 개발 중인 기능
-
-- 화면 녹화 (MP4 / MOV / GIF) — `#if DEBUG` 빌드에서만 활성화
 
 ## 라이선스
 

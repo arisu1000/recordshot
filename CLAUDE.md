@@ -38,8 +38,7 @@ tccutil reset ScreenCapture com.recordshot.app
 ### 좌표계 주의사항
 - `RegionOverlayView` (NSView 기본값, `isFlipped = false`) → 마우스 이벤트는 bottom-left origin
 - `mouseUp`에서 Y-flip 수행 → `onRegionSelected`에 **top-left origin** 좌표 전달
-- `ScreenCaptureManager.takeRegionScreenshot` → 전달받은 좌표를 그대로 픽셀 변환 후 크롭
-- **이중 Y-flip 금지**: RegionSelector `mouseUp`에서 이미 한 번 뒤집으므로 ScreenCaptureManager에서 다시 뒤집지 말 것
+- `ScreenCaptureManager.takeRegionScreenshot` → `CGWindowListCreateImage(region, ...)` 사용. top-left origin 포인트 좌표를 직접 전달하므로 좌표 변환 불필요
 - `NSImage` 생성 시 반드시 논리 포인트 크기 사용 (`image.width / backingScaleFactor`) — pixel 크기로 만들면 Retina에서 2배 크게 보임
 
 ### 비동기 패턴
@@ -66,6 +65,8 @@ NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.hei
 | `AnnotationCanvasNSView` | 드로잉 캔버스 (isFlipped=true). 주석 저장 및 `renderToFinalImage()` 담당 |
 | `ImageEditorWindow.swift` | NSWindow 생명주기 관리. onComplete 콜백 체인 처리 |
 | `CapturePreviewPanel.swift` | 현재 미사용(편집창 직행). 향후 필요시 재활성화 가능 |
+| `AppSettings.swift` | UserDefaults 설정 모델. `LaunchAction` enum으로 앱 시작 시 동작 설정 |
+| `AppDelegate.swift` | 앱 초기화, 권한 요청, `executeLaunchAction()`으로 시작 시 동작 실행 |
 
 ## 편집기 좌표계
 
@@ -86,14 +87,23 @@ renderToFinalImage() 내부:
 | `⌘⇧3` | 전체 스크린샷 |
 | `⌘⇧4` | 영역 스크린샷 |
 | `⌘⇧5` | 녹화 시작/중지 |
+| `⌘⇧6` | 영역 녹화 |
 
 글로벌 단축키는 손쉬운 사용(Accessibility) 권한 필요.
+
+### 녹화 안정성
+- `RecordingSession.stream(_:didOutputSampleBuffer:of:)` 에서 반드시 `SCFrameStatus.complete`만 처리 — idle/blank 버퍼를 `AVAssetWriter`에 append하면 writer가 에러 상태에 빠짐
+
+### 실행 시 동작 (Launch Action)
+- `AppSettings.launchAction`으로 앱 시작 시 자동 실행할 동작 설정 (없음/전체 스크린샷/영역 스크린샷/전체 녹화/영역 녹화)
+- `AppDelegate.executeLaunchAction()`에서 300ms 지연 후 실행 — UI 초기화 완료 대기
 
 ## 알려진 제약
 
 - 글로벌 단축키(`⌘⇧3`, `⌘⇧4`)는 macOS 기본 스크린샷과 충돌 가능 — 시스템 설정에서 비활성화 필요
 - 녹화 기능은 오디오 미포함 (macOS 13+ 에서 `capturesAudio` 지원이나 현재 비활성)
 - 멀티 디스플레이 환경에서 `content.displays.first`만 사용 — 향후 디스플레이 선택 UI 추가 필요
+- 매 ad-hoc 빌드마다 서명이 바뀌어 화면 기록 + 손쉬운 사용 권한 재설정 필요
 
 ## 의존성
 
